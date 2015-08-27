@@ -30,20 +30,20 @@ void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
 {
   ros::Duration tdiff=this->_request_time - msg.header.stamp;
   ROS_INFO("reception delay: %f sec",tdiff.toSec());
-  if(tdiff<=ros::Duration(0,0))// responce received after end of movement. 
-    {
+  if(tdiff<=ros::Duration(0,0))// responce received after end of movement.
+  {
 
-      msg_recv=true;
-    }
-  else 
+    msg_recv=true;
+  }
+  else
     return;
   tf::Transform temp;
   tf::poseMsgToTF(msg.pose.pose,temp);
   _final_pos=_prev_pos.inverse()*temp;
   ROS_INFO("Start position: \nX:%f \n Y:%f \n Z:%f \n",_prev_pos.getOrigin()[0],_prev_pos.getOrigin()[1],_prev_pos.getOrigin()[2]);
   _prev_pos=temp;
-  ROS_INFO("move performed: \nX:%f \n Y:%f \n Z:%f \n",_final_pos.getOrigin()[0],_final_pos.getOrigin()[1],_final_pos.getOrigin()[2]);  
-  _covered_distance=round(_final_pos.getOrigin()[0]*100)/100.0f;    
+  ROS_INFO("move performed: \nX:%f \n Y:%f \n Z:%f \n",_final_pos.getOrigin()[0],_final_pos.getOrigin()[1],_final_pos.getOrigin()[2]);
+  _covered_distance=round(_final_pos.getOrigin()[0]*100)/100.0f;
   ROS_INFO("distance parcourue: %f",_covered_distance);
   /*
 
@@ -62,7 +62,7 @@ void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
     _final_pos.push_back(msg.pose.pose.position.z-_prev_pos[2]);
 
     _prev_pos.clear();
-    _covered_distance=round(_final_pos[0]*100)/100.0f;    
+    _covered_distance=round(_final_pos[0]*100)/100.0f;
     ROS_INFO("distance parcourue: %f",_covered_distance);
     }*/
   return;
@@ -73,72 +73,69 @@ void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
 void RobotHexa :: init()
 {
   try
+  {
+    _controller.open_serial("/dev/ttyACM0",B1000000);
+
+    // Scan actuators IDs
+    _controller.scan_ax12s();
+    const std::vector<byte_t>& ax12_ids = _controller.ax12_ids();
+    if (!ax12_ids.size())
     {
-      _controller.open_serial("/dev/ttyACM0",B1000000);
-
-      // Scan actuators IDs
-      _controller.scan_ax12s();
-      const std::vector<byte_t>& ax12_ids = _controller.ax12_ids();
-      if (!ax12_ids.size())
-        {
-	  std::cerr<<"[ax12] no ax12 detected"<<std::endl;
-	  return;
-        }
-      std::cout << "[dynamixel] " << ax12_ids.size()
-		<< " dynamixel are connected" << std::endl;
-
-      // Set AX-12+ ids : [1, 2, 3]
-      _actuators_ids.push_back(1);
-      _actuators_ids.push_back(11);
-      _actuators_ids.push_back(21);
-
-
-      _actuators_ids.push_back(2);
-      _actuators_ids.push_back(12);
-      _actuators_ids.push_back(22);
-
-
-      _actuators_ids.push_back(3);
-      _actuators_ids.push_back(13);
-      _actuators_ids.push_back(23);
-
-
-      _actuators_ids.push_back(4);
-      _actuators_ids.push_back(14);
-      _actuators_ids.push_back(24);
-
-
-      _actuators_ids.push_back(5);
-      _actuators_ids.push_back(15);
-      _actuators_ids.push_back(25);
-
-
-      _actuators_ids.push_back(6);
-      _actuators_ids.push_back(16);
-      _actuators_ids.push_back(26);
-
-
-
-
-
-      std::cout << "initialisation completed" << std::endl;
+      std::cerr<<"[ax12] no ax12 detected"<<std::endl;
+      return;
     }
+    std::cout << "[dynamixel] " << ax12_ids.size()
+	            << " dynamixel are connected" << std::endl;
+
+    // Set AX-12+ ids : [1, 2, 3]
+    _actuators_ids.push_back(1);
+    _actuators_ids.push_back(11);
+    _actuators_ids.push_back(21);
+
+
+    _actuators_ids.push_back(2);
+    _actuators_ids.push_back(12);
+    _actuators_ids.push_back(22);
+
+
+    _actuators_ids.push_back(3);
+    _actuators_ids.push_back(13);
+    _actuators_ids.push_back(23);
+
+
+    _actuators_ids.push_back(4);
+    _actuators_ids.push_back(14);
+    _actuators_ids.push_back(24);
+
+
+    _actuators_ids.push_back(5);
+    _actuators_ids.push_back(15);
+    _actuators_ids.push_back(25);
+
+
+    _actuators_ids.push_back(6);
+    _actuators_ids.push_back(16);
+    _actuators_ids.push_back(26);
+
+
+    std::cout << "initialisation completed" << std::endl;
+  }
   catch (dynamixel::Error e)
-    {
-      std::cerr << "error (dynamixel): " << e.msg() << std::endl;
-    }
+  {
+    std::cerr << "error (dynamixel): " << e.msg() << std::endl;
+  }
 
 #ifdef IMU
   try
-    {
+  {
 
-      _imu.open_serial("/dev/ttyUSB1");
+    _imu.open_serial("/dev/ttyUSB1");
 
-    }
+  }
   catch (imu::Error e)
-    {
-      std::cerr << "error (imu): " << e.msg() << std::endl;
-    }
+  {
+    std::cerr << "error (imu): " << e.msg() << std::endl;
+  }
 
 #endif
   // motor position correctio (offset)
@@ -167,57 +164,57 @@ void RobotHexa::setPID()
   int cw_compliance_slope = 32;
   int ccw_compliance_slope = 32;
   for(int i=1; i<=6;i++)//ax18
-    {
-      _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl::cw_compliance_margin,cw_compliance_margin));
-      _controller.recv(READ_DURATION, _status);
-      _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl::ccw_compliance_margin,ccw_compliance_margin));
-      _controller.recv(READ_DURATION, _status);
-      _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl:: cw_compliance_slope,cw_compliance_slope));
-      _controller.recv(READ_DURATION, _status);
-      _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl:: ccw_compliance_slope,ccw_compliance_slope));
-      _controller.recv(READ_DURATION, _status);
-     
-      
-    }
-  
+  {
+    _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl::cw_compliance_margin,cw_compliance_margin));
+    _controller.recv(READ_DURATION, _status);
+    _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl::ccw_compliance_margin,ccw_compliance_margin));
+    _controller.recv(READ_DURATION, _status);
+    _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl:: cw_compliance_slope,cw_compliance_slope));
+    _controller.recv(READ_DURATION, _status);
+    _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl:: ccw_compliance_slope,ccw_compliance_slope));
+    _controller.recv(READ_DURATION, _status);
+
+
+  }
+
   int P1=50;
   int I1=30;//254;
   int D1=0;
-  
+
   int P2=P1;
   int I2=I1;
   int D2=D1;
 
   for(int i=11; i<=16;i++)
-    {
-      //D
-      _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl::cw_compliance_margin,D1));
-      _controller.recv(READ_DURATION, _status);
-      //I
-      _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl::ccw_compliance_margin,I1));
-      _controller.recv(READ_DURATION, _status);
-      //P
-      _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl:: cw_compliance_slope,P1));
-      _controller.recv(READ_DURATION, _status);
-	    
+  {
+    //D
+    _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl::cw_compliance_margin,D1));
+    _controller.recv(READ_DURATION, _status);
+    //I
+    _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl::ccw_compliance_margin,I1));
+    _controller.recv(READ_DURATION, _status);
+    //P
+    _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl:: cw_compliance_slope,P1));
+    _controller.recv(READ_DURATION, _status);
 
-	    
-    }
+
+
+  }
   for(int i=21; i<=26;i++)
-    {
-      //D
-      _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl::cw_compliance_margin,D2));
-      _controller.recv(READ_DURATION, _status);
+  {
+    //D
+    _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl::cw_compliance_margin,D2));
+    _controller.recv(READ_DURATION, _status);
 
-      //I
-      _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl::ccw_compliance_margin,I2));
-      _controller.recv(READ_DURATION, _status);
+    //I
+    _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl::ccw_compliance_margin,I2));
+    _controller.recv(READ_DURATION, _status);
 
-      //P
-      _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl:: cw_compliance_slope,P2));
-      _controller.recv(READ_DURATION, _status);
-	    
-    }      
+    //P
+    _controller.send(dynamixel::ax12::WriteData(i,dynamixel::ax12::ctrl:: cw_compliance_slope,P2));
+    _controller.recv(READ_DURATION, _status);
+
+  }
 }
 
 
@@ -232,33 +229,33 @@ void RobotHexa::applyCorrection(std::vector<int>& pos)
 void RobotHexa :: reset()
 {
   try
-    {
-      if(_controller.isOpen()==false)
-	{
-	  std::cout<<"re-opening dynamixel's serial"<<std::endl;
-	  _controller.open_serial("/dev/ttyACM0",B1000000);
-	}
-      _controller.flush();
-    }
+  {
+    if(_controller.isOpen()==false)
+  	{
+  	  std::cout<<"re-opening dynamixel's serial"<<std::endl;
+  	  _controller.open_serial("/dev/ttyACM0",B1000000);
+  	}
+    _controller.flush();
+  }
   catch (dynamixel::Error e)
-    {
-      std::cerr << "error (dynamixel): " << e.msg() << std::endl;
-    }
+  {
+    std::cerr << "error (dynamixel): " << e.msg() << std::endl;
+  }
 #ifdef IMU
   try
-    {
+  {
 
-      if(_imu.isOpen()==false)
-        {
-	  std::cout<<"re-opening imu's serial"<<std::endl;
-	  _imu.open_serial("/dev/ttyUSB1");
-        }
-      _imu.flush();
-    }
-  catch (imu::Error e)
+    if(_imu.isOpen()==false)
     {
-      std::cerr << "error (imu): " << e.msg() << std::endl;
+      std::cout<<"re-opening imu's serial"<<std::endl;
+      _imu.open_serial("/dev/ttyUSB1");
     }
+    _imu.flush();
+  }
+  catch (imu::Error e)
+  {
+    std::cerr << "error (imu): " << e.msg() << std::endl;
+  }
 #endif
   std::cout << "setting all dynamixel to zero" << std::endl;
   //  setPID();
@@ -272,9 +269,9 @@ void RobotHexa :: reset()
       pos[i]= 2048;
     else if (_actuators_ids[i] >= 10) // mx28
       pos[i] = 1024;
-
     else
       pos[i] = 2048;
+
   applyCorrection(pos);
   _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
   _controller.recv(READ_DURATION, _status);
@@ -287,9 +284,9 @@ void RobotHexa :: reset()
       pos[i]= 2048-512-256;
     else if (_actuators_ids[i] >= 10) // mx28
       pos[i] = 1024;
-
     else
       pos[i] = 2048;
+
   applyCorrection(pos);
   _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
   _controller.recv(READ_DURATION, _status);
@@ -302,9 +299,9 @@ void RobotHexa :: reset()
       pos[i]= 2048-256;
     else if (_actuators_ids[i] >= 10) // mx28
       pos[i] = 2048;
-
     else
       pos[i] = 2048;
+
   applyCorrection(pos);
   _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
   _controller.recv(READ_DURATION, _status);
@@ -316,9 +313,9 @@ void RobotHexa :: reset()
   pos.resize(_actuators_ids.size());
   usleep(0.5e6);
   for (size_t i = 0; i < _actuators_ids.size(); ++i)
-    {
-	pos[i] = 2048;
-    }
+  {
+	  pos[i] = 2048;
+  }
 
   applyCorrection(pos);
   _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
@@ -357,10 +354,10 @@ void RobotHexa:: position_zero()
   pos.resize(_actuators_ids.size());
   sleep(1);
   for (size_t i = 0; i < _actuators_ids.size(); ++i)
-    {
-	pos[i] = 2048;
-    }
-  
+  {
+	  pos[i] = 2048;
+  }
+
   applyCorrection(pos);
   _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
   _controller.recv(READ_DURATION, _status);
@@ -378,85 +375,84 @@ void RobotHexa:: position_zero()
 
 void RobotHexa :: _read_contacts()
 {
-  
+
   _controller.send(dynamixel::ax12::ReadData(11,dynamixel::ax12::ctrl::present_load_lo,2));
   if(  _controller.recv(READ_DURATION, _status))
-    {
-      if ((int)_status.decode16()>1024)
-	{
-	  
-	  _behavior_contact_0.push_back(-(int)_status.decode16()+1024);
-	}
-      else
-	{
-	  
-	  _behavior_contact_0.push_back((int)_status.decode16());
-	}
-    }
+  {
+    if ((int)_status.decode16()>1024)
+	  {
+      _behavior_contact_0.push_back(-(int)_status.decode16()+1024);
+	  }
+    else
+  	{
+
+  	  _behavior_contact_0.push_back((int)_status.decode16());
+  	}
+  }
   else
     _behavior_contact_0.push_back(1024);//pas de reponse>>pas de contact
-  
+
 
 
   _controller.send(dynamixel::ax12::ReadData(12,dynamixel::ax12::ctrl::present_load_lo,2));
   if(  _controller.recv(READ_DURATION, _status))
-    {
-      if ((int)_status.decode16()>1024)
-	_behavior_contact_1.push_back(-(int)_status.decode16()+1024);
-      else
-	_behavior_contact_1.push_back((int)_status.decode16());
-    }
+  {
+    if ((int)_status.decode16()>1024)
+	   _behavior_contact_1.push_back(-(int)_status.decode16()+1024);
+    else
+	   _behavior_contact_1.push_back((int)_status.decode16());
+  }
   else
     _behavior_contact_1.push_back(1024);//pas de reponse>>pas de contact
-  
+
 
   _controller.send(dynamixel::ax12::ReadData(13,dynamixel::ax12::ctrl::present_load_lo,2));
   if(  _controller.recv(READ_DURATION, _status))
-    {
-      if ((int)_status.decode16()>1024)
-	_behavior_contact_2.push_back(-(int)_status.decode16()+1024);
-      else
-	_behavior_contact_2.push_back((int)_status.decode16());
-    }
+  {
+    if ((int)_status.decode16()>1024)
+	   _behavior_contact_2.push_back(-(int)_status.decode16()+1024);
+    else
+	   _behavior_contact_2.push_back((int)_status.decode16());
+  }
   else
     _behavior_contact_2.push_back(1024);//pas de reponse>>pas de contact
-  
+
 
   _controller.send(dynamixel::ax12::ReadData(14,dynamixel::ax12::ctrl::present_load_lo,2));
   if(  _controller.recv(READ_DURATION, _status))
-    {  
-      if ((int)_status.decode16()>1024)
-	_behavior_contact_3.push_back(-(int)_status.decode16()+1024);
-      else
-	_behavior_contact_3.push_back((int)_status.decode16());
-    }
+  {
+    if ((int)_status.decode16()>1024)
+	   _behavior_contact_3.push_back(-(int)_status.decode16()+1024);
+    else
+	   _behavior_contact_3.push_back((int)_status.decode16());
+  }
   else
     _behavior_contact_3.push_back(1024);//pas de reponse>>pas de contact
-  
+
 
   _controller.send(dynamixel::ax12::ReadData(15,dynamixel::ax12::ctrl::present_load_lo,2));
   if(  _controller.recv(READ_DURATION, _status))
-    {  
-      if ((int)_status.decode16()>1024)
-	_behavior_contact_4.push_back(-(int)_status.decode16()+1024);
-      else
-	_behavior_contact_4.push_back((int)_status.decode16());
-    }
+  {
+    if ((int)_status.decode16()>1024)
+	   _behavior_contact_4.push_back(-(int)_status.decode16()+1024);
+    else
+	   _behavior_contact_4.push_back((int)_status.decode16());
+  }
   else
     _behavior_contact_4.push_back(1024);//pas de reponse>>pas de contact
-  
+
 
   _controller.send(dynamixel::ax12::ReadData(16,dynamixel::ax12::ctrl::present_load_lo,2));
   if(  _controller.recv(READ_DURATION, _status))
-    {
-      if ((int)_status.decode16()>1024)
-	_behavior_contact_5.push_back(-(int)_status.decode16()+1024);
-      else
-	_behavior_contact_5.push_back((int)_status.decode16());
-    }
+  {
+    if ((int)_status.decode16()>1024)
+	   _behavior_contact_5.push_back(-(int)_status.decode16()+1024);
+    else
+	   _behavior_contact_5.push_back((int)_status.decode16());
+  }
   else
     _behavior_contact_5.push_back(1024);//pas de reponse>>pas de contact
-  
+
 }
 
 
@@ -465,151 +461,151 @@ void RobotHexa::contactSmoothing(int length)
   std::vector<float> smooth(_behavior_contact_0.size());
 
   for (int i=0;i<_behavior_contact_0.size();i++)
+  {
+    int k=0;
+    for (int j=-length;j<=length;j++)
     {
-      int k=0;
-      for (int j=-length;j<=length;j++)
-        {
-	  if (i+j>=0 && i+j<_behavior_contact_0.size())
-            {
-	      smooth[i]+=_behavior_contact_0[i+j];
-	      k++;
-            }
-        }
-      smooth[i]/=(float)k;
-
+      if (i+j>=0 && i+j<_behavior_contact_0.size())
+      {
+        smooth[i]+=_behavior_contact_0[i+j];
+        k++;
+      }
     }
+    smooth[i]/=(float)k;
+
+  }
   _behavior_contact_0.clear();
 
 
 
 
   for (int i=0;i<smooth.size();i++)
-    {
-      if (smooth[i]>0)
-	_behavior_contact_0.push_back(0);
-      else
-	_behavior_contact_0.push_back(1);
-    }
+  {
+    if (smooth[i]>0)
+      _behavior_contact_0.push_back(0);
+    else
+      _behavior_contact_0.push_back(1);
+  }
 
   smooth.clear();
   smooth.resize(_behavior_contact_1.size());
   for (int i=0;i<_behavior_contact_1.size();i++)
+  {
+    int k=0;
+    for (int j=-length;j<=length;j++)
     {
-      int k=0;
-      for (int j=-length;j<=length;j++)
-        {
-	  if (i+j>=0 && i+j<_behavior_contact_1.size())
-            {
+	    if (i+j>=0 && i+j<_behavior_contact_1.size())
+      {
 	      smooth[i]+=_behavior_contact_1[i+j];
 	      k++;
-            }
-        }
-      smooth[i]/=(float)k;
+      }
     }
+    smooth[i]/=(float)k;
+  }
   _behavior_contact_1.clear();
   for (int i=0;i<smooth.size();i++)
-    {
-      if (smooth[i]>0)
-	_behavior_contact_1.push_back(0);
-      else
-	_behavior_contact_1.push_back(1);
-    }
+  {
+    if (smooth[i]>0)
+	   _behavior_contact_1.push_back(0);
+    else
+	   _behavior_contact_1.push_back(1);
+  }
 
   smooth.clear();
   smooth.resize(_behavior_contact_2.size());
   for (int i=0;i<_behavior_contact_2.size();i++)
+  {
+    int k=0;
+    for (int j=-length;j<=length;j++)
     {
-      int k=0;
-      for (int j=-length;j<=length;j++)
-        {
-	  if (i+j>=0 && i+j<_behavior_contact_2.size())
-            {
-	      smooth[i]+=_behavior_contact_2[i+j];
-	      k++;
-            }
-        }
+      if (i+j>=0 && i+j<_behavior_contact_2.size())
+      {
+        smooth[i]+=_behavior_contact_2[i+j];
+        k++;
+      }
+    }
       smooth[i]/=(float)k;
     }
   _behavior_contact_2.clear();
   for (int i=0;i<smooth.size();i++)
-    {
-      if (smooth[i]>0)
-	_behavior_contact_2.push_back(0);
-      else
-	_behavior_contact_2.push_back(1);
-    }
+  {
+    if (smooth[i]>0)
+	   _behavior_contact_2.push_back(0);
+    else
+	   _behavior_contact_2.push_back(1);
+  }
 
   smooth.clear();
   smooth.resize(_behavior_contact_3.size());
   for (int i=0;i<_behavior_contact_3.size();i++)
+  {
+    int k=0;
+    for (int j=-length;j<=length;j++)
     {
-      int k=0;
-      for (int j=-length;j<=length;j++)
-        {
-	  if (i+j>=0 && i+j<_behavior_contact_3.size())
-            {
+      if (i+j>=0 && i+j<_behavior_contact_3.size())
+      {
 	      smooth[i]+=_behavior_contact_3[i+j];
 	      k++;
-            }
-        }
-      smooth[i]/=(float)k;
+      }
     }
+    smooth[i]/=(float)k;
+  }
   _behavior_contact_3.clear();
   for (int i=0;i<smooth.size();i++)
-    {
-      if (smooth[i]>0)
-	_behavior_contact_3.push_back(0);
-      else
-	_behavior_contact_3.push_back(1);
-    }
+  {
+    if (smooth[i]>0)
+	   _behavior_contact_3.push_back(0);
+    else
+	   _behavior_contact_3.push_back(1);
+  }
 
   smooth.clear();
   smooth.resize(_behavior_contact_4.size());
   for (int i=0;i<_behavior_contact_4.size();i++)
+  {
+    int k=0;
+    for (int j=-length;j<=length;j++)
     {
-      int k=0;
-      for (int j=-length;j<=length;j++)
-        {
-	  if (i+j>=0 && i+j<_behavior_contact_4.size())
-            {
-	      smooth[i]+=_behavior_contact_4[i+j];
-	      k++;
-            }
-        }
-      smooth[i]/=(float)k;
+      if (i+j>=0 && i+j<_behavior_contact_4.size())
+      {
+        smooth[i]+=_behavior_contact_4[i+j];
+        k++;
+      }
     }
+    smooth[i]/=(float)k;
+  }
   _behavior_contact_4.clear();
   for (int i=0;i<smooth.size();i++)
-    {
-      if (smooth[i]>0)
-	_behavior_contact_4.push_back(0);
-      else
-	_behavior_contact_4.push_back(1);
-    }
+  {
+    if (smooth[i]>0)
+	   _behavior_contact_4.push_back(0);
+    else
+	   _behavior_contact_4.push_back(1);
+  }
 
   smooth.clear();
   smooth.resize(_behavior_contact_5.size());
   for (int i=0;i<_behavior_contact_5.size();i++)
+  {
+    int k=0;
+    for (int j=-length;j<=length;j++)
     {
-      int k=0;
-      for (int j=-length;j<=length;j++)
-        {
-	  if (i+j>=0 && i+j<_behavior_contact_5.size())
-            {
+	    if (i+j>=0 && i+j<_behavior_contact_5.size())
+      {
 	      smooth[i]+=_behavior_contact_5[i+j];
 	      k++;
-            }
-        }
-      smooth[i]/=(float)k;
+      }
     }
+    smooth[i]/=(float)k;
+  }
   _behavior_contact_5.clear();
   for (int i=0;i<smooth.size();i++)
-    {
-      if (smooth[i]>0)
-	_behavior_contact_5.push_back(0);
-      else
-	_behavior_contact_5.push_back(1);
-    }
+  {
+    if (smooth[i]>0)
+	   _behavior_contact_5.push_back(0);
+    else
+	   _behavior_contact_5.push_back(1);
+  }
 }
 
 void RobotHexa ::write_contact(std::string const name)
@@ -619,16 +615,16 @@ void RobotHexa ::write_contact(std::string const name)
   std::ofstream workingFile(name.c_str());
 
   if (workingFile)
+  {
+    for (int i =0;i<_behavior_contact_0.size();i++)
     {
-      for (int i =0;i<_behavior_contact_0.size();i++)
-        {
-	  workingFile<<_behavior_contact_0[i]<<" "<<_behavior_contact_1[i]<<" "<<_behavior_contact_2[i]<<" "<<_behavior_contact_3[i]<<" "<<_behavior_contact_4[i]<<" "<<_behavior_contact_5[i]<<std::endl;
-        }
+      workingFile<<_behavior_contact_0[i]<<" "<<_behavior_contact_1[i]<<" "<<_behavior_contact_2[i]<<" "<<_behavior_contact_3[i]<<" "<<_behavior_contact_4[i]<<" "<<_behavior_contact_5[i]<<std::endl;
     }
+  }
   else
-    {
-      std::cout << "ERROR: Impossible to open the file." << std::endl;
-    }
+  {
+    std::cout << "ERROR: Impossible to open the file." << std::endl;
+  }
 
 
 }
@@ -684,13 +680,13 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   _behavior_contact_4.clear();
   _behavior_contact_5.clear();
   std::vector<int>pos=controller.get_pos_dyna(0,_correction);
-    
+
   _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
   _controller.recv(READ_DURATION, _status);
 
   _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
   _controller.recv(READ_DURATION, _status);
- 
+
 
 
   //std::cout<<"Waiting key " <<std::endl;
@@ -720,71 +716,67 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
 
   int index=0;
   while (true)
+  {
+    gettimeofday(&timev_cur, NULL);
+    timersub(&timev_cur, &timev_prev, &timev_diff);
+
+    timersub(&timev_cur, &timev_init, &timev_duration);
+
+    if (timev_duration.tv_sec >= duration)//*/index>=duration*1000000/sampling_interval_us)
     {
-      gettimeofday(&timev_cur, NULL);
-      timersub(&timev_cur, &timev_prev, &timev_diff);
+      std::cout<<"time duration "<<timev_duration.tv_sec<<"."<<timev_duration.tv_usec<<std::endl;
 
-      timersub(&timev_cur, &timev_init, &timev_duration);
 
-      if (timev_duration.tv_sec >= duration)//*/index>=duration*1000000/sampling_interval_us)
-        {
-	  std::cout<<"time duration "<<timev_duration.tv_sec<<"."<<timev_duration.tv_usec<<std::endl;
-	  
+  	  usleep(0.5e6);
+  	  //send_ros_stop(1,transfer_number);
+  	  getSlamInfo();
+  	  _sub.shutdown();
+  	  contactSmoothing(2);
+  	  break;
+    }
+    if (first)
+    {
+      first=false;
 
-	  usleep(0.5e6);
-	  //send_ros_stop(1,transfer_number);
-	  getSlamInfo();
-	  _sub.shutdown();
-	  contactSmoothing(2);
-	  break;
-        }
-      if (first)
-        {
-	  first=false;
+      _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, controller.get_pos_dyna(timev_duration.tv_sec+timev_duration.tv_usec/(float)1000000,_correction)));
 
-	  _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, controller.get_pos_dyna(timev_duration.tv_sec+timev_duration.tv_usec/(float)1000000,_correction)));
-
-	  _read_contacts();
+      _read_contacts();
 
 
 #ifdef IMU
-	  std::vector<float> vect;
+      std::vector<float> vect;
 
-	  _imu.recv(READ_DURATION,vect);
+      _imu.recv(READ_DURATION,vect);
 
-	  _imu_angles.push_back(vect);
+      _imu_angles.push_back(vect);
 #endif
-	  index++;
-	  //_controller.send(dynamixel::ax12::SetSpeeds(_wheels_ids, controller.get_directions_dyna(),controller.get_speeds_dyna()));
-	  //_controller.recv(READ_DURATION, _status);
-
-
-        }
-
-
-
-      // On fait un step de sampling_interval_us (on suppose qu'une step ne dépasse pas 1 sec)
-      if (timev_diff.tv_usec >= sampling_interval_us)
-        {
-	  //std::cout<<timev_diff.tv_usec<<std::endl;
-	  _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, controller.get_pos_dyna(timev_duration.tv_sec+timev_duration.tv_usec/(float)1000000,_correction)));
-
-	  _read_contacts();
-#ifdef IMU
-	  std::vector<float> vect;
-
-	  _imu.recv(READ_DURATION,vect);
-	  _imu_angles.push_back(vect);
-#endif
-	  timev_prev = timev_cur;
-	  t+=0.030;
-	  index++;
-        }
+  	  index++;
+  	  //_controller.send(dynamixel::ax12::SetSpeeds(_wheels_ids, controller.get_directions_dyna(),controller.get_speeds_dyna()));
+  	  //_controller.recv(READ_DURATION, _status);
 
 
     }
 
 
 
+    // On fait un step de sampling_interval_us (on suppose qu'une step ne dépasse pas 1 sec)
+    if (timev_diff.tv_usec >= sampling_interval_us)
+    {
+      //std::cout<<timev_diff.tv_usec<<std::endl;
+      _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, controller.get_pos_dyna(timev_duration.tv_sec+timev_duration.tv_usec/(float)1000000,_correction)));
+
+	    _read_contacts();
+#ifdef IMU
+	    std::vector<float> vect;
+
+  	  _imu.recv(READ_DURATION,vect);
+  	  _imu_angles.push_back(vect);
+#endif
+  	  timev_prev = timev_cur;
+  	  t+=0.030;
+  	  index++;
+    }
+
+  }
 
 }

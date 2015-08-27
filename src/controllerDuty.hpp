@@ -36,7 +36,6 @@ public :
   {
     assert(ctrl.size()==36);
 
-  
     _legs0commands.push_back(control_signal(ctrl[0],ctrl[1],ctrl[2]));
     _legs0commands.push_back(control_signal(ctrl[3],ctrl[4],ctrl[5]));
     _legs0commands.push_back(control_signal(ctrl[3],ctrl[4],ctrl[5]));
@@ -60,29 +59,29 @@ public :
     _legs5commands.push_back(control_signal(ctrl[30],ctrl[31],ctrl[32]));
     _legs5commands.push_back(control_signal(ctrl[33],ctrl[34],ctrl[35]));
     _legs5commands.push_back(control_signal(ctrl[33],ctrl[34],ctrl[35]));
-    
+
     /* for(int i=0;i<_legs0commands[0].size();i++)
       std::cout<<_legs0commands[0][i]<<" ";
       std::cout<<std::endl;*/
-    
-    
+
+
   }
 
 
 
   array_t control_signal(float amplitude, float phase, float duty_cycle);
-  
-  
+
+
   bool isBroken(int leg)
   {
     for (int j=0;j<_brokenLegs.size();j++)
-        {
-            if (leg==_brokenLegs[j])
-            {
-                return true;
-            }
-        }
-        return false;
+    {
+      if (leg==_brokenLegs[j])
+      {
+        return true;
+      }
+    }
+    return false;
   }
 
 
