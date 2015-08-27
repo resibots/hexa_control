@@ -1,0 +1,28 @@
+<package>
+  <name>hexa_control</name>
+  <version>0.0.0</version>
+  <description>hexa_control</description>
+
+  <author>Antoine Cully</author>
+  <maintainer email="cully@isir.upmc.fr">Antoine Cully</maintainer>
+
+  <license>BSD</license>
+
+  <url>http://ros.org/wiki/hexa_control</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>roscpp</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>nav_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+
+  <export>
+    <rosdoc config="rosdoc.yaml" />
+    <cpp cflags="-I${prefix}/include -I${prefix}/srv_gen/cpp " lflags="-L${prefix}/lib"/>  # -L/opt/ros/groovy/lib  -lroscpp  -lrosconsole -lroscpp_serialization" />
+  </export>
+</package>

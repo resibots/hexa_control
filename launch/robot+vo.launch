@@ -1,0 +1,35 @@
+<!-- Launches RGB-D visual odometry in onjunction with the HEXAPOD node-->
+
+<launch>
+
+  #### OPENNI CAMERA ####################################
+  <include file="$(find ccny_openni_launch)/launch/openni.launch">
+  </include>
+
+  #### VISUAL ODOMETRY ####################################
+
+  # ORB, SURF, GTF, STAR
+  <arg name="detector_type" default="GFT"/> 
+
+  # ICPProbModel, ICP
+  <arg name="reg_type" default="ICPProbModel"/> 
+  
+
+
+  <include file="$(find ccny_rgbd)/launch/visual_odometry.launch">
+    <arg name="detector_type" value="$(arg detector_type)"/>
+    <arg name="reg_type"      value="$(arg reg_type)"/>
+  </include>
+
+ <param name="/visual_odometry_node/verbose" value="false"/>    
+ <param name="/visual_odometry_node/reg/ICPProbModel/n_nearest_neighbors" value="10"/>    
+ <param name="/visual_odometry_node/reg/ICPProbModel/max_iterations" value="20"/>    
+
+  #### HEXAPOD SERVER ###################################
+
+  <node pkg="hexa_control" type="hexapod_server" name="hexapod_server" 
+    output="screen">
+  </node>
+
+</launch>
+
