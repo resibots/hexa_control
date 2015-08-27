@@ -4,6 +4,9 @@ This package is to be used in conjuction with an optimisation technique that wil
 
 Please note that this is a work in progress and it might not work as well as expected.
 
+## Authors
+Original author : Antoine Cully
+
 ## Dependencies
 hexa_control needs the nav_msgs package that can be retreived by APT-get with 'sudo apt-get install ros-YourDistro-nav-msgs.
 
