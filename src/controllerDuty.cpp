@@ -7,7 +7,8 @@ typedef boost::array<float,ARRAY_DIM> array_t;
 
 array_t ControllerDuty::control_signal(float amplitude, float phase, float duty_cycle)
 {
-
+  // Dorian : initial command; +amplitude at start and -amplitude for the active
+  //  part of the duty cycle (when touching the floor)
   array_t temp;
   int up_time=ARRAY_DIM*duty_cycle;
   for(int i=0;i<up_time;i++)
@@ -20,6 +21,7 @@ array_t ControllerDuty::control_signal(float amplitude, float phase, float duty_
 
 
   // filtering
+  // Dorian : build a gaussian filter kernel
   int kernel_size=ARRAY_DIM/10;
 
   array_t command;
@@ -35,7 +37,7 @@ array_t ControllerDuty::control_signal(float amplitude, float phase, float duty_
   }
 
 
-
+  // Dorian : apply the gaussian filter on the square command
   for(int i=0;i<ARRAY_DIM;i++)
   {
     command[i]=0;
