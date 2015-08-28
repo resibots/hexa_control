@@ -28,23 +28,26 @@ bool msg_recv;
 
 void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
 {
-  ros::Duration tdiff=this->_request_time - msg.header.stamp;
-  ROS_INFO("reception delay: %f sec",tdiff.toSec());
-  if(tdiff<=ros::Duration(0,0))// responce received after end of movement.
-  {
+  ros::Duration tdiff = this->_request_time - msg.header.stamp;
+  ROS_INFO("reception delay: %f sec", tdiff.toSec());
 
-    msg_recv=true;
-  }
+  if(tdiff <= ros::Duration(0,0))// responce received after end of movement.
+    msg_recv = true;
   else
     return;
+
   tf::Transform temp;
-  tf::poseMsgToTF(msg.pose.pose,temp);
-  _final_pos=_prev_pos.inverse()*temp;
-  ROS_INFO("Start position: \nX:%f \n Y:%f \n Z:%f \n",_prev_pos.getOrigin()[0],_prev_pos.getOrigin()[1],_prev_pos.getOrigin()[2]);
-  _prev_pos=temp;
-  ROS_INFO("move performed: \nX:%f \n Y:%f \n Z:%f \n",_final_pos.getOrigin()[0],_final_pos.getOrigin()[1],_final_pos.getOrigin()[2]);
-  _covered_distance=round(_final_pos.getOrigin()[0]*100)/100.0f;
-  ROS_INFO("distance parcourue: %f",_covered_distance);
+  tf::poseMsgToTF(msg.pose.pose, temp);
+  _final_pos = _prev_pos.inverse()*temp;
+  ROS_INFO("Start position: \nX:%f \n Y:%f \n Z:%f\n",
+           _prev_pos.getOrigin()[0], _prev_pos.getOrigin()[1],
+           _prev_pos.getOrigin()[2]);
+  _prev_pos = temp;
+  ROS_INFO("move performed: \nX:%f \n Y:%f \n Z:%f\n",
+           _final_pos.getOrigin()[0], _final_pos.getOrigin()[1],
+           _final_pos.getOrigin()[2]);
+  _covered_distance = round(_final_pos.getOrigin()[0]*100)/100.0f;
+  ROS_INFO("distance traveled: %f", _covered_distance);
   /*
 
     if(_prev_pos.size()==0)
