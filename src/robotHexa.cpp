@@ -77,7 +77,8 @@ void RobotHexa :: init()
 {
   try
   {
-    _controller.open_serial("/dev/ttyACM0",B1000000);
+    // _controller.open_serial("/dev/ttyACM0",B1000000); // FIXME: use parameters instead
+    _controller.open_serial("/dev/ttyUSB0",B115200); // FIXME: use parameters instead
 
     // Scan actuators IDs
     _controller.scan_ax12s();
@@ -143,15 +144,15 @@ void RobotHexa :: init()
 #endif
   // motor position correctio (offset)
   _correction=std::vector<int>(18,0);
-  _correction[0]=-256;
-  _correction[2]=-300;
-  _correction[4]=-240;
-  _correction[6]=256;
-  _correction[7]=50;
-  _correction[9]=-256;
-  _correction[10]=-150;
-  _correction[13]=-40;
-  _correction[15]=256;
+  // _correction[0]=-256;
+  // _correction[2]=-300;
+  // _correction[4]=-240;
+  // _correction[6]=256;
+  // _correction[7]=50;
+  // _correction[9]=-256;
+  // _correction[10]=-150;
+  // _correction[13]=-40;
+  // _correction[15]=256;
 
 
   //  setPID();
@@ -236,7 +237,7 @@ void RobotHexa :: reset()
     if(_controller.isOpen()==false)
   	{
   	  std::cout<<"re-opening dynamixel's serial"<<std::endl;
-  	  _controller.open_serial("/dev/ttyACM0",B1000000);
+  	  _controller.open_serial("/dev/ttyUSB0",B115200);
   	}
     _controller.flush();
   }
@@ -260,61 +261,62 @@ void RobotHexa :: reset()
     std::cerr << "error (imu): " << e.msg() << std::endl;
   }
 #endif
-  std::cout << "setting all dynamixel to zero" << std::endl;
+  ROS_INFO("setting all dynamixel to zero");
   //  setPID();
 
   enable();
 
   std::vector<int> pos(_actuators_ids.size());
 
-  for (size_t i = 0; i < _actuators_ids.size(); ++i)
-    if(_actuators_ids[i]>=20)
-      pos[i]= 2048;
-    else if (_actuators_ids[i] >= 10) // mx28
-      pos[i] = 1024;
-    else
-      pos[i] = 2048;
-
-  applyCorrection(pos);
-  _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
-  _controller.recv(READ_DURATION, _status);
-
-  pos.clear();
-  pos.resize(_actuators_ids.size());
-  usleep(0.5e6);
-  for (size_t i = 0; i < _actuators_ids.size(); ++i)
-    if(_actuators_ids[i]>=20)
-      pos[i]= 2048-512-256;
-    else if (_actuators_ids[i] >= 10) // mx28
-      pos[i] = 1024;
-    else
-      pos[i] = 2048;
-
-  applyCorrection(pos);
-  _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
-  _controller.recv(READ_DURATION, _status);
-
-  pos.clear();
-  pos.resize(_actuators_ids.size());
-  usleep(0.5e6);
-  for (size_t i = 0; i < _actuators_ids.size(); ++i)
-    if(_actuators_ids[i]>=20)
-      pos[i]= 2048-256;
-    else if (_actuators_ids[i] >= 10) // mx28
-      pos[i] = 2048;
-    else
-      pos[i] = 2048;
-
-  applyCorrection(pos);
-  _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
-  _controller.recv(READ_DURATION, _status);
-
-
-
-
-  pos.clear();
-  pos.resize(_actuators_ids.size());
-  usleep(0.5e6);
+  // FIXME : what is the point of that code ?
+  // for (size_t i = 0; i < _actuators_ids.size(); ++i)
+  //   if(_actuators_ids[i]>=20)
+  //     pos[i]= 2048;
+  //   else if (_actuators_ids[i] >= 10) // mx28
+  //     pos[i] = 1024;
+  //   else
+  //     pos[i] = 2048;
+  //
+  // applyCorrection(pos);
+  // _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
+  // _controller.recv(READ_DURATION, _status);
+  //
+  // pos.clear();
+  // pos.resize(_actuators_ids.size());
+  // usleep(0.5e6);
+  // for (size_t i = 0; i < _actuators_ids.size(); ++i)
+  //   if(_actuators_ids[i]>=20)
+  //     pos[i]= 2048-512-256;
+  //   else if (_actuators_ids[i] >= 10) // mx28
+  //     pos[i] = 1024;
+  //   else
+  //     pos[i] = 2048;
+  //
+  // applyCorrection(pos);
+  // _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
+  // _controller.recv(READ_DURATION, _status);
+  //
+  // pos.clear();
+  // pos.resize(_actuators_ids.size());
+  // usleep(0.5e6);
+  // for (size_t i = 0; i < _actuators_ids.size(); ++i)
+  //   if(_actuators_ids[i]>=20)
+  //     pos[i]= 2048-256;
+  //   else if (_actuators_ids[i] >= 10) // mx28
+  //     pos[i] = 2048;
+  //   else
+  //     pos[i] = 2048;
+  //
+  // applyCorrection(pos);
+  // _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
+  // _controller.recv(READ_DURATION, _status);
+//
+//
+//
+//
+  // pos.clear();
+  // pos.resize(_actuators_ids.size());
+  // usleep(0.5e6);
   for (size_t i = 0; i < _actuators_ids.size(); ++i)
   {
 	  pos[i] = 2048;
@@ -326,14 +328,14 @@ void RobotHexa :: reset()
 
   sleep(1);
 
-  std::cout << "done" << std::endl;
+  ROS_INFO("... done");
 
 }
 
 
 void RobotHexa:: position_zero()
 {
-  std::cout << "initial position" << std::endl;
+  ROS_DEBUG_STREAM("initial position");
   enable();
 
   std::vector<int> pos(_actuators_ids.size());
@@ -361,14 +363,22 @@ void RobotHexa:: position_zero()
 	  pos[i] = 2048;
   }
 
-  applyCorrection(pos);
-  _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
-  _controller.recv(READ_DURATION, _status);
+  try
+  {
+    applyCorrection(pos);
+    _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
+    _controller.recv(READ_DURATION, _status);
+  }
+  catch(dynamixel::Error e)
+  {
+    ROS_ERROR_STREAM(e.msg());
+    sleep(10);
+  }
 
   usleep(0.5e6);
 
 
-  std::cout << "done" << std::endl;
+  ROS_DEBUG_STREAM("done");
 
 
 }
