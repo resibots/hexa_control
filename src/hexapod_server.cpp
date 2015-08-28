@@ -5,6 +5,7 @@
 #include "controllerDuty.hpp"
 
 #include <boost/shared_ptr.hpp>
+#include <sstream>
 
 boost::shared_ptr<RobotHexa> hexapod_p;
 ros::Publisher statepub;
@@ -12,30 +13,37 @@ ros::Publisher statepub;
 bool transfert(hexa_control::Transfert::Request  &req,
                hexa_control::Transfert::Response &res )
 {
-  if(req.duration<-1)
+  ROS_INFO_STREAM("Requested motion duration : " << req.duration);
+  if(req.duration < -1)
   {
     hexapod_p->relax();
     return true;
   }
-  else if(req.duration ==0)
+  else if(req.duration == 0)
   {
     hexapod_p->reset();
     return true;
   }
-  else if(req.duration ==-1)
+  else if(req.duration == -1)
   {
     hexapod_p->position_zero();
     return true;
   }
 
+  ROS_INFO_STREAM("Waiting for two seconds before cycles.");
+  sleep(2);
+
   std::vector<float> params;
+  std::stringstream param_sstr;
+  param_sstr << "Parameters received : ";
   for(int i=0;i<36;i++)
   {
     params.push_back(req.params[i]);
-    ROS_INFO("%f",params[i]);
+    param_sstr << params[i] << " ";
   }
+  ROS_DEBUG_STREAM(param_sstr.str());
 
-  ControllerDuty ctrl(params,std::vector<int>());
+  ControllerDuty ctrl(params, std::vector<int>());
 
   std_msgs::String msg;
   msg.data = "start";
@@ -58,7 +66,7 @@ bool transfert(hexa_control::Transfert::Request  &req,
   msg.data = "stop";
   statepub.publish(msg);
 
-  res.covered_distance=hexapod_p->covered_distance();
+  res.covered_distance = hexapod_p->covered_distance();
   ROS_INFO("request:");
 
   return true;
