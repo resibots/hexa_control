@@ -32,9 +32,15 @@ void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
   ROS_INFO("reception delay: %f sec", tdiff.toSec());
 
   if(tdiff <= ros::Duration(0,0))// responce received after end of movement.
+  {
+    ROS_DEBUG_STREAM("odometry message after end of movement; processing");
     msg_recv = true;
+  }
   else
+  {
+    ROS_DEBUG_STREAM("too early the message is; keeping the loop running");
     return;
+  }
 
   tf::Transform temp;
   tf::poseMsgToTF(msg.pose.pose, temp);
@@ -684,7 +690,7 @@ void RobotHexa:: getSlamInfo()
 
 void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transfer_number)
 {
-
+  ROS_DEBUG_STREAM("Entering transfer.");
 
   _behavior_contact_0.clear();
   _behavior_contact_1.clear();
@@ -716,7 +722,7 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   // Ticks loop ///////////////////////////
   bool first=true;
   _sub=_node_p->subscribe("vo",1,&RobotHexa::posCallback,this);
-  getSlamInfo();
+  // getSlamInfo(); // TODO : commented in the attempt to fix the experiment
   //    send_ros_start(1,transfer_number);
 
 
@@ -752,6 +758,7 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
       first=false;
 
       _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, controller.get_pos_dyna(timev_duration.tv_sec+timev_duration.tv_usec/(float)1000000,_correction)));
+      _controller.recv(READ_DURATION, _status);
 
       _read_contacts();
 
@@ -777,6 +784,7 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
     {
       //std::cout<<timev_diff.tv_usec<<std::endl;
       _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, controller.get_pos_dyna(timev_duration.tv_sec+timev_duration.tv_usec/(float)1000000,_correction)));
+      _controller.recv(READ_DURATION, _status);
 
 	    _read_contacts();
 #ifdef IMU
