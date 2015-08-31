@@ -1,4 +1,5 @@
 #include "ros/ros.h"
+#include "ros/console.h"
 #include "hexa_control/Transfert.h"
 
 #include "robotHexa.hpp"
@@ -30,8 +31,7 @@ bool transfert(hexa_control::Transfert::Request  &req,
     return true;
   }
 
-  ROS_INFO_STREAM("Waiting for two seconds before cycles.");
-  sleep(2);
+  // Store and display the parameters of the oscillators
 
   std::vector<float> params;
   std::stringstream param_sstr;
@@ -41,13 +41,17 @@ bool transfert(hexa_control::Transfert::Request  &req,
     params.push_back(req.params[i]);
     param_sstr << params[i] << " ";
   }
-  ROS_DEBUG_STREAM(param_sstr.str());
+  ROS_INFO_STREAM(param_sstr.str());
+
+  // Instanciate the controller that generates the values for each oscillator.
 
   ControllerDuty ctrl(params, std::vector<int>());
 
   std_msgs::String msg;
   msg.data = "start";
   statepub.publish(msg);
+
+  // Execute the experiment
 
   //hexapod_p->initial_pos();
   try
@@ -67,7 +71,7 @@ bool transfert(hexa_control::Transfert::Request  &req,
   statepub.publish(msg);
 
   res.covered_distance = hexapod_p->covered_distance();
-  ROS_INFO("request:");
+  ROS_INFO("Experiment finished");
 
   return true;
 }
@@ -92,6 +96,10 @@ int main(int argc, char **argv)
   hexapod_p->initRosNode(argc,argv,node_p);
   ros::ServiceServer service = node_p->advertiseService("Transfert", transfert);
   statepub = node_p->advertise<std_msgs::String>("transfertState", 10);
+
+  if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+     ros::console::notifyLoggerLevelsChanged();
+  }
 
   ROS_INFO("Ready to control the robot.");
   ros::spin();
