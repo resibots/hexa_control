@@ -59,9 +59,15 @@ public:
   {
     for (size_t i = 0; i < _actuators_ids.size(); ++i)
     {
-      _controller.send(dynamixel::ax12::TorqueEnable(_actuators_ids[i], true));
-      _controller.recv(READ_DURATION, _status);
+      try {
+        _controller.send(dynamixel::ax12::TorqueEnable(_actuators_ids[i], true));
+        _controller.recv(READ_DURATION, _status);
+      }
+      catch (dynamixel::Error e){
+        std::cerr << "error dynamixel (enable) id =" << (int)_actuators_ids[i] << " " << e.msg() << " " <<__FILE__<<" " << __LINE__ << std::endl;
+      }
     }
+
     usleep(1e5);
   }
 

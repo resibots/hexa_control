@@ -1,5 +1,6 @@
 #include <iostream>
 #include <limits>
+#include <std_srvs/Empty.h>
 #include "robotHexa.hpp"
 
 #include <fstream>
@@ -28,6 +29,9 @@ bool msg_recv;
 
 void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
 {
+
+  std::cout<<__FILE__<<"  "<<__LINE__<<std::endl;
+
   ros::Duration tdiff = this->_request_time - msg.header.stamp;
   ROS_INFO("reception delay: %f sec", tdiff.toSec());
 
@@ -44,7 +48,11 @@ void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
 
   tf::Transform temp;
   tf::poseMsgToTF(msg.pose.pose, temp);
+  ROS_INFO_STREAM("rcv message:" << msg);
   _final_pos = _prev_pos.inverse()*temp;
+  ROS_INFO("Temp position: \nX:%f \n Y:%f \n Z:%f\n",
+           temp.getOrigin()[0], temp.getOrigin()[1],
+           temp.getOrigin()[2]);
   ROS_INFO("Start position: \nX:%f \n Y:%f \n Z:%f\n",
            _prev_pos.getOrigin()[0], _prev_pos.getOrigin()[1],
            _prev_pos.getOrigin()[2]);
@@ -84,7 +92,7 @@ void RobotHexa :: init()
   try
   {
     // _controller.open_serial("/dev/ttyACM0",B1000000); // FIXME: use parameters instead
-    _controller.open_serial("/dev/ttyUSB0",B115200); // FIXME: use parameters instead
+    _controller.open_serial("/dev/ttyUSB0", B1000000);//B115200); // FIXME: use parameters instead
 
     // Scan actuators IDs
     _controller.scan_ax12s();
@@ -150,16 +158,33 @@ void RobotHexa :: init()
 #endif
   // motor position correctio (offset)
   _correction=std::vector<int>(18,0);
-  // _correction[0]=-256;
-  // _correction[2]=-300;
-  // _correction[4]=-240;
-  // _correction[6]=256;
-  // _correction[7]=50;
-  // _correction[9]=-256;
-  // _correction[10]=-150;
-  // _correction[13]=-40;
-  // _correction[15]=256;
+  // _correction[0] = -550;
+  _correction[0] = -256;
+  _correction[1] = -512;
+  _correction[2] = 512;
 
+  _correction[3] = 0;
+  _correction[4] = -512;
+  _correction[5] = 512;
+
+  // _correction[6] = 550;
+  _correction[6] = 256;
+  _correction[7] = -512;
+  _correction[8] = 512;
+
+  // _correction[9] = -550;
+  _correction[9] = -256;
+  _correction[10] = -512;
+  _correction[11] = 512;
+
+  _correction[12] = 0;
+  _correction[13] = -512;
+  _correction[14] = 512;
+
+  // _correction[15] = 550;
+  _correction[15] = 256;
+  _correction[16] = -512;
+  _correction[17] = 512;
 
   //  setPID();
 
@@ -243,7 +268,7 @@ void RobotHexa :: reset()
     if(_controller.isOpen()==false)
   	{
   	  std::cout<<"re-opening dynamixel's serial"<<std::endl;
-  	  _controller.open_serial("/dev/ttyUSB0",B115200);
+  	  _controller.open_serial("/dev/ttyUSB0",B1000000);
   	}
     _controller.flush();
   }
@@ -700,12 +725,16 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   _behavior_contact_5.clear();
   std::vector<int>pos=controller.get_pos_dyna(0,_correction);
 
-  _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
-  _controller.recv(READ_DURATION, _status);
+  try {
+    _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
+    _controller.recv(READ_DURATION, _status);
 
-  _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
-  _controller.recv(READ_DURATION, _status);
-
+    _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
+    _controller.recv(READ_DURATION, _status);
+  }
+  catch (dynamixel::Error e) {
+    ROS_ERROR_STREAM("WARNING: error (dynamixel) -- init transfer" << e.msg() << " " << __FILE__<<" "<<__LINE__);
+  }
 
 
   //std::cout<<"Waiting key " <<std::endl;
@@ -717,14 +746,27 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   struct timeval timev_cur;   // Current absolute time
   struct timeval timev_diff;  // Current tick position (curent - previous)
   struct timeval timev_duration;  // Duration of the movement (current - initial)
-  unsigned int sampling_interval_us = 30000;
+  unsigned int sampling_interval_us = 30000*4;//30000;
   float t=0;
   // Ticks loop ///////////////////////////
   bool first=true;
+
+  // reset odometry
+  ros::ServiceClient client = _node_p->serviceClient<std_srvs::Empty>("/reset_odom");
+  std_srvs::Empty srv;
+  if (client.call(srv)) {
+    ROS_INFO("reset_odom sent");
+  } else {
+    ROS_ERROR("Failed to reset odometry");
+  }
+
   _sub=_node_p->subscribe("vo",1,&RobotHexa::posCallback,this);
-  // getSlamInfo(); // TODO : commented in the attempt to fix the experiment
+  ROS_INFO_STREAM("------------------------------------- First getSlamInfo() -----------------");
+  usleep(1e6);
+  getSlamInfo(); // TODO : commented in the attempt to fix the experiment
   //    send_ros_start(1,transfer_number);
 
+  ROS_INFO_STREAM("------------------------------------- First getSlamInfo() OK -----------------");
 
   usleep(0.5e6);
   timerclear(&timev_init);
@@ -748,19 +790,37 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
 
   	  usleep(0.5e6);
   	  //send_ros_stop(1,transfer_number);
+      std::cout<<__FILE__<<"  "<<__LINE__<<std::endl;
+
+
+      ROS_INFO_STREAM("------------------------------------- SECOND getSlamInfo() -----------------");
+      usleep(1e6);
+      ROS_INFO_STREAM("sleep done");
+
   	  getSlamInfo();
+      ROS_INFO_STREAM("------------------------------------- SECOND getSlamInfo() ok -----------------");
+
+      std::cout<<__FILE__<<"  "<<__LINE__<<std::endl;
+
   	  _sub.shutdown();
-  	  contactSmoothing(2);
+      std::cout<<__FILE__<<"  "<<__LINE__<<std::endl;
+
+  	//  contactSmoothing(2);
+      std::cout<<__FILE__<<"  "<<__LINE__<<std::endl;
+
   	  break;
     }
     if (first)
     {
       first=false;
-
-      _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, controller.get_pos_dyna(timev_duration.tv_sec+timev_duration.tv_usec/(float)1000000,_correction)));
-      _controller.recv(READ_DURATION, _status);
-
-      _read_contacts();
+      try {
+        _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, controller.get_pos_dyna(timev_duration.tv_sec+timev_duration.tv_usec/(float)1000000,_correction)));
+        _controller.recv(READ_DURATION, _status);
+      }
+      catch (dynamixel::Error e) {
+        ROS_ERROR_STREAM("WARNING: error (dynamixel) -- init " << e.msg() << " " << __FILE__<<" "<<__LINE__);
+      }
+  //    _read_contacts();
 
 
 #ifdef IMU
@@ -783,10 +843,15 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
     if (timev_diff.tv_usec >= sampling_interval_us)
     {
       //std::cout<<timev_diff.tv_usec<<std::endl;
-      _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, controller.get_pos_dyna(timev_duration.tv_sec+timev_duration.tv_usec/(float)1000000,_correction)));
-      _controller.recv(READ_DURATION, _status);
+      try {
+        _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, controller.get_pos_dyna(timev_duration.tv_sec+timev_duration.tv_usec/(float)1000000,_correction)));
+        _controller.recv(READ_DURATION, _status);
+      }
+      catch (dynamixel::Error e) {
+        ROS_ERROR_STREAM("WARNING: error (dynamixel) -- step: " << e.msg());
+      }
 
-	    _read_contacts();
+	//    _read_contacts();
 #ifdef IMU
 	    std::vector<float> vect;
 
@@ -794,7 +859,7 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   	  _imu_angles.push_back(vect);
 #endif
   	  timev_prev = timev_cur;
-  	  t+=0.030;
+  	  t+=0.30 * 4;//0.030;
   	  index++;
     }
 

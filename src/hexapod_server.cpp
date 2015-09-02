@@ -14,66 +14,65 @@ ros::Publisher statepub;
 bool transfert(hexa_control::Transfert::Request  &req,
                hexa_control::Transfert::Response &res )
 {
-  ROS_INFO_STREAM("Requested motion duration : " << req.duration);
-  if(req.duration < -1)
-  {
-    hexapod_p->relax();
-    return true;
-  }
-  else if(req.duration == 0)
-  {
-    hexapod_p->reset();
-    return true;
-  }
-  else if(req.duration == -1)
-  {
-    hexapod_p->position_zero();
-    return true;
-  }
-
-  // Store and display the parameters of the oscillators
-
-  std::vector<float> params;
-  std::stringstream param_sstr;
-  param_sstr << "Parameters received : ";
-  for(int i=0;i<36;i++)
-  {
-    params.push_back(req.params[i]);
-    param_sstr << params[i] << " ";
-  }
-  ROS_INFO_STREAM(param_sstr.str());
-
-  // Instanciate the controller that generates the values for each oscillator.
-
-  ControllerDuty ctrl(params, std::vector<int>());
-
-  std_msgs::String msg;
-  msg.data = "start";
-  statepub.publish(msg);
-
-  // Execute the experiment
-
-  //hexapod_p->initial_pos();
   try
   {
+    ROS_INFO_STREAM("Requested motion duration : " << req.duration);
+    if(req.duration < -1)
+    {
+      hexapod_p->relax();
+      return true;
+    }
+    else if(req.duration == 0)
+    {
+      hexapod_p->reset();
+      return true;
+    }
+    else if(req.duration == -1)
+    {
+      hexapod_p->position_zero();
+      return true;
+    }
 
+    // Store and display the parameters of the oscillators
+
+    std::vector<float> params;
+    std::stringstream param_sstr;
+    param_sstr << "Parameters received : ";
+    for(int i=0;i<36;i++)
+    {
+      params.push_back(req.params[i]);
+      param_sstr << params[i] << " ";
+    }
+    ROS_INFO_STREAM(param_sstr.str());
+
+    // Instanciate the controller that generates the values for each oscillator.
+
+    ControllerDuty ctrl(params, std::vector<int>());
+
+    std_msgs::String msg;
+    msg.data = "start";
+    statepub.publish(msg);
+
+    // Execute the experiment
+
+    //hexapod_p->initial_pos();
     hexapod_p->transfer(ctrl,req.duration,0);
 
+    msg.data = "stop";
+    statepub.publish(msg);
+
+    res.covered_distance = hexapod_p->covered_distance();
+    ROS_INFO("Experiment finished");
+
+    return true;
   }
   catch (dynamixel::Error e)
   {
-    std::cerr << "error (dynamixel): " << e.msg() << std::endl;
+    std::cerr << "error (dynamixel): " << e.msg() << " " <<__FILE__<<" " << __LINE__ << std::endl;
     std::cout<<"closing serials"<<std::endl;
     hexapod_p->close_usb_controllers();
+    exit(1);
   }
-
-  msg.data = "stop";
-  statepub.publish(msg);
-
-  res.covered_distance = hexapod_p->covered_distance();
-  ROS_INFO("Experiment finished");
-
-  return true;
 }
 
 int main(int argc, char **argv)
@@ -85,9 +84,10 @@ int main(int argc, char **argv)
   }
   catch (dynamixel::Error e)
   {
-    std::cerr << "error (dynamixel): " << e.msg() << std::endl;
+    std::cerr << "error (dynamixel): " << e.msg() << " " <<__FILE__<<" " << __LINE__ << std::endl;
     std::cout<<"closing serials"<<std::endl;
     hexapod_p->close_usb_controllers();
+    return 1;
   }
 
 
