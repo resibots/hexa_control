@@ -23,12 +23,10 @@ catkin_package(
  CATKIN_DEPENDS roscpp std_msgs nav_msgs message_runtime
 )
 
-link_directories(~/Code/libdynamixel/build/default/src/dynamixel)
-# link_directories(/home/cully/lib)
-# include_directories(/home/hexapod/include)
+link_directories(~/lib)
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  ~/Code/libdynamixel/src/
+  ~/include
 )
 
 add_executable(hexapod_client src/hexapod_client.cpp)
