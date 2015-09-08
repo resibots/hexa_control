@@ -160,31 +160,31 @@ void RobotHexa :: init()
   _correction=std::vector<int>(18,0);
   // _correction[0] = -550;
   _correction[0] = -256;
-  _correction[1] = -512;
-  _correction[2] = 512;
+  _correction[1] = 0;
+  _correction[2] = 1024;
 
   _correction[3] = 0;
-  _correction[4] = -512;
-  _correction[5] = 512;
+  _correction[4] = 0;
+  _correction[5] = 1024;
 
   // _correction[6] = 550;
   _correction[6] = 256;
-  _correction[7] = -512;
-  _correction[8] = 512;
+  _correction[7] = 0;
+  _correction[8] = 1024;
 
   // _correction[9] = -550;
   _correction[9] = -256;
-  _correction[10] = -512;
-  _correction[11] = 512;
+  _correction[10] = 0;
+  _correction[11] = 1024;
 
   _correction[12] = 0;
-  _correction[13] = -512;
-  _correction[14] = 512;
+  _correction[13] = 0;
+  _correction[14] = 1024;
 
   // _correction[15] = 550;
   _correction[15] = 256;
-  _correction[16] = -512;
-  _correction[17] = 512;
+  _correction[16] = 0;
+  _correction[17] = 1024;
 
   //  setPID();
 
@@ -746,7 +746,7 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   struct timeval timev_cur;   // Current absolute time
   struct timeval timev_diff;  // Current tick position (curent - previous)
   struct timeval timev_duration;  // Duration of the movement (current - initial)
-  unsigned int sampling_interval_us = 30000*4;//30000;
+  unsigned int sampling_interval_us = 30000;//30000*4;
   float t=0;
   // Ticks loop ///////////////////////////
   bool first=true;
@@ -859,7 +859,7 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   	  _imu_angles.push_back(vect);
 #endif
   	  timev_prev = timev_cur;
-  	  t+=0.30 * 4;//0.030;
+  	  t+=0.030;//0.30 * 4;//0.030;
   	  index++;
     }
 
