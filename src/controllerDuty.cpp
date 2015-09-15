@@ -202,8 +202,8 @@ std::vector<int> ControllerDuty::get_pos_dyna(float t, const std::vector<int>& c
           theta2= M_PI/4*_legs0commands[2][((int)floor(t*100))%100];  // marche que pour ARRAY_DIM =100
 
           pos.push_back(2048+correction[0]-RAD2DYNMX28*(theta0));
-          pos.push_back(2048+correction[1]+RAD2DYNMX28*(theta1));
-          pos.push_back(2048+correction[2]-RAD2DYNMX28*(-theta2));
+          pos.push_back(2048+correction[1]-RAD2DYNMX28*(theta1));
+          pos.push_back(2048+correction[2]+RAD2DYNMX28*(-theta2));
           break;
 
         case 1:
@@ -211,8 +211,8 @@ std::vector<int> ControllerDuty::get_pos_dyna(float t, const std::vector<int>& c
           theta1= M_PI/4*_legs1commands[1][((int)floor(t*100))%100];  // marche que pour ARRAY_DIM =100
           theta2= M_PI/4*_legs1commands[2][((int)floor(t*100))%100];  // marche que pour ARRAY_DIM =100
           pos.push_back(2048+correction[3]-RAD2DYNMX28*(theta0));
-          pos.push_back(2048+correction[4]+RAD2DYNMX28*(theta1));
-          pos.push_back(2048+correction[5]-RAD2DYNMX28*(-theta2));
+          pos.push_back(2048+correction[4]-RAD2DYNMX28*(theta1));
+          pos.push_back(2048+correction[5]+RAD2DYNMX28*(-theta2));
 
           break;
 
@@ -222,8 +222,8 @@ std::vector<int> ControllerDuty::get_pos_dyna(float t, const std::vector<int>& c
           theta2= M_PI/4*_legs2commands[2][((int)floor(t*100))%100];  // marche que pour ARRAY_DIM =100
 
           pos.push_back(2048+correction[6]-RAD2DYNMX28*(theta0));
-          pos.push_back(2048+correction[7]+RAD2DYNMX28*(theta1));
-          pos.push_back(2048+correction[8]-RAD2DYNMX28*(-theta2));
+          pos.push_back(2048+correction[7]-RAD2DYNMX28*(theta1));
+          pos.push_back(2048+correction[8]+RAD2DYNMX28*(-theta2));
 
           break;
 
@@ -233,8 +233,8 @@ std::vector<int> ControllerDuty::get_pos_dyna(float t, const std::vector<int>& c
           theta2= M_PI/4*_legs3commands[2][((int)floor(t*100))%100];  // marche que pour ARRAY_DIM =100
 
           pos.push_back(2048+correction[9]-RAD2DYNMX28*(theta0));
-          pos.push_back(2048+correction[10]+RAD2DYNMX28*(theta1));
-          pos.push_back(2048+correction[11]-RAD2DYNMX28*(-theta2));
+          pos.push_back(2048+correction[10]-RAD2DYNMX28*(theta1));
+          pos.push_back(2048+correction[11]+RAD2DYNMX28*(-theta2));
 
           break;
 
@@ -243,8 +243,8 @@ std::vector<int> ControllerDuty::get_pos_dyna(float t, const std::vector<int>& c
           theta1= M_PI/4*_legs4commands[1][((int)floor(t*100))%100];  // marche que pour ARRAY_DIM =100
           theta2= M_PI/4*_legs4commands[2][((int)floor(t*100))%100];  // marche que pour ARRAY_DIM =100
           pos.push_back(2048+correction[12]-RAD2DYNMX28*(theta0));
-          pos.push_back(2048+correction[13]+RAD2DYNMX28*(theta1));
-          pos.push_back(2048+correction[14]-RAD2DYNMX28*(-theta2));
+          pos.push_back(2048+correction[13]-RAD2DYNMX28*(theta1));
+          pos.push_back(2048+correction[14]+RAD2DYNMX28*(-theta2));
 
           break;
 
@@ -254,8 +254,8 @@ std::vector<int> ControllerDuty::get_pos_dyna(float t, const std::vector<int>& c
           theta2= M_PI/4*_legs5commands[2][((int)floor(t*100))%100];  // marche que pour ARRAY_DIM =100
 
           pos.push_back(2048+correction[15]-RAD2DYNMX28*(theta0));
-          pos.push_back(2048+correction[16]+RAD2DYNMX28*(theta1));
-          pos.push_back(2048+correction[17]-RAD2DYNMX28*(-theta2));
+          pos.push_back(2048+correction[16]-RAD2DYNMX28*(theta1));
+          pos.push_back(2048+correction[17]+RAD2DYNMX28*(-theta2));
 
           break;
 
