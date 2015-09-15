@@ -105,35 +105,37 @@ void RobotHexa :: init()
     std::cout << "[dynamixel] " << ax12_ids.size()
 	            << " dynamixel are connected" << std::endl;
 
-    // Set AX-12+ ids : [1, 2, 3]
-    _actuators_ids.push_back(1);
-    _actuators_ids.push_back(11);
-    _actuators_ids.push_back(21);
-
-
-    _actuators_ids.push_back(2);
-    _actuators_ids.push_back(12);
-    _actuators_ids.push_back(22);
-
-
-    _actuators_ids.push_back(3);
-    _actuators_ids.push_back(13);
-    _actuators_ids.push_back(23);
-
-
+    // Set ids of the actuators
+    // Order : leg 1 [limb 1, limb 2, limb 3], leg 2 [limb 1, limb 2, limb 3], etc.
+    // front-right
     _actuators_ids.push_back(4);
     _actuators_ids.push_back(14);
     _actuators_ids.push_back(24);
 
-
+    // middle-right
     _actuators_ids.push_back(5);
     _actuators_ids.push_back(15);
     _actuators_ids.push_back(25);
 
-
+    // back-right
     _actuators_ids.push_back(6);
     _actuators_ids.push_back(16);
     _actuators_ids.push_back(26);
+
+    // back-left
+    _actuators_ids.push_back(1);
+    _actuators_ids.push_back(11);
+    _actuators_ids.push_back(21);
+
+    // middle-left
+    _actuators_ids.push_back(2);
+    _actuators_ids.push_back(12);
+    _actuators_ids.push_back(22);
+
+    // front-left
+    _actuators_ids.push_back(3);
+    _actuators_ids.push_back(13);
+    _actuators_ids.push_back(23);
 
 
     std::cout << "initialisation completed" << std::endl;
