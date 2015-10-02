@@ -29,8 +29,6 @@ else()
   set(libdynamixel_dir "$ENV{RESIBOTS_DIR}")
 endif()
 
-message(STATUS ${hexa_dir})
-
 link_directories("${libdynamixel_dir}/lib")
 include_directories(
   ${catkin_INCLUDE_DIRS}
