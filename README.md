@@ -10,7 +10,7 @@ Original author : Antoine Cully
 ## Dependencies
 hexa_control needs the nav_msgs package that can be retreived by APT-get with 'sudo apt-get install ros-YourDistro-nav-msgs.
 
-In addition, it requires libdynamixel to be available on the system and manually added to CMakeLists.txt.
+In addition, it requires libdynamixel to be available on the system. It can be found on the **HOME** folder by default. You can change where to search for libdynamixel by setting the environmental variable *RESIBOTS_DIR* to the path where libdynamixel is located.
 
 ## Odometry
 This package needs some odometry information to estimate the performance of the trial. To get it, the program subscribes to the "vo" topic.
