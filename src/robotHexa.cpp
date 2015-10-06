@@ -1,10 +1,11 @@
 #include <iostream>
 #include <limits>
-#include <std_srvs/Empty.h>
+#include <fstream>
+#include <cmath>
+
 #include "robotHexa.hpp"
 
-#include <fstream>
-
+#include <std_srvs/Empty.h>
 
 bool msg_recv;
 
@@ -60,7 +61,10 @@ void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
   ROS_INFO("move performed: \nX:%f \n Y:%f \n Z:%f\n",
            _final_pos.getOrigin()[0], _final_pos.getOrigin()[1],
            _final_pos.getOrigin()[2]);
-  _covered_distance = round(_final_pos.getOrigin()[0]*100)/100.0f;
+  // Take the distance on XZ plane as the traveled distance, to account for
+  // the angle betwee the floor and the RGB-D camera (Xtion).
+  _covered_distance = hypot(_final_pos.getOrigin()[0], _final_pos.getOrigin()[2]);
+  _covered_distance = round(_covered_distance*100)/100.0f;
   ROS_INFO("distance traveled: %f", _covered_distance);
   /*
 
