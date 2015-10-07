@@ -1,5 +1,6 @@
 #include <iostream>
 #include <dynamixel/dynamixel.hpp>
+#include <ros/ros.h>
 
 #define READ_DURATION 0.005f
 
@@ -19,7 +20,7 @@ int main(int argc, char **argv)
     torque_H=torque_limit>>8;
     torque_L=torque_limit%(torque_H<<8);
   }
-  std::cout<<"setting max torques to "<<torque_limit<<"("<<torque_H<<" "<< torque_L<<")"<<std::endl;
+  ROS_INFO("setting max torques to %d(%d %d)", torque_limit, torque_H, torque_L);
   try
   {
     for(int i=1; i<=6;i++)//ax18
@@ -34,7 +35,7 @@ int main(int argc, char **argv)
   }
   catch (dynamixel::Error e)
   {
-    std::cerr << "error (dynamixel): " << e.msg() << std::endl;
+    ROS_ERROR("error (dynamixel): %s", e.msg().c_str());
   }
 
 }

@@ -68,8 +68,8 @@ bool transfert(hexa_control::Transfert::Request  &req,
   }
   catch (dynamixel::Error e)
   {
-    std::cerr << "error (dynamixel): " << e.msg() << " " <<__FILE__<<" " << __LINE__ << std::endl;
-    std::cout<<"closing serials"<<std::endl;
+    ROS_ERROR("error (dynamixel): %s %s %d", e.msg().c_str(), __FILE__, __LINE__);
+    ROS_ERROR("closing serials");
     hexapod_p->close_usb_controllers();
     exit(1);
   }
@@ -84,8 +84,8 @@ int main(int argc, char **argv)
   }
   catch (dynamixel::Error e)
   {
-    std::cerr << "error (dynamixel): " << e.msg() << " " <<__FILE__<<" " << __LINE__ << std::endl;
-    std::cout<<"closing serials"<<std::endl;
+    ROS_ERROR("error (dynamixel): %s %s %d", e.msg().c_str(), __FILE__, __LINE__);
+    ROS_ERROR("closing serials");
     hexapod_p->close_usb_controllers();
     return 1;
   }

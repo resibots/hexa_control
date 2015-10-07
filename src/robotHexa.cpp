@@ -1,11 +1,10 @@
 #include <iostream>
 #include <limits>
-#include <fstream>
-#include <cmath>
-
+#include <std_srvs/Empty.h>
 #include "robotHexa.hpp"
 
-#include <std_srvs/Empty.h>
+#include <fstream>
+
 
 bool msg_recv;
 
@@ -61,10 +60,7 @@ void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
   ROS_INFO("move performed: \nX:%f \n Y:%f \n Z:%f\n",
            _final_pos.getOrigin()[0], _final_pos.getOrigin()[1],
            _final_pos.getOrigin()[2]);
-  // Take the distance on XZ plane as the traveled distance, to account for
-  // the angle betwee the floor and the RGB-D camera (Xtion).
-  _covered_distance = hypot(_final_pos.getOrigin()[0], _final_pos.getOrigin()[2]);
-  _covered_distance = round(_covered_distance*100)/100.0f;
+  _covered_distance = round(_final_pos.getOrigin()[0]*100)/100.0f;
   ROS_INFO("distance traveled: %f", _covered_distance);
   /*
 
@@ -103,11 +99,10 @@ void RobotHexa :: init()
     const std::vector<byte_t>& ax12_ids = _controller.ax12_ids();
     if (!ax12_ids.size())
     {
-      std::cerr<<"[ax12] no ax12 detected"<<std::endl;
+      ROS_ERROR("[ax12] no ax12 detected");
       return;
     }
-    std::cout << "[dynamixel] " << ax12_ids.size()
-	            << " dynamixel are connected" << std::endl;
+    ROS_INFO("[dynamixel] %lu dynamixel are connected", ax12_ids.size());
 
     // Set ids of the actuators
     // Order : leg 1 [limb 1, limb 2, limb 3], leg 2 [limb 1, limb 2, limb 3], etc.
@@ -142,11 +137,11 @@ void RobotHexa :: init()
     _actuators_ids.push_back(23);
 
 
-    std::cout << "initialisation completed" << std::endl;
+    ROS_INFO("initialisation completed");
   }
   catch (dynamixel::Error e)
   {
-    std::cerr << "error (dynamixel): " << e.msg() << std::endl;
+    ROS_ERROR("error (dynamixel): %s", e.msg().c_str());
   }
 
 #ifdef IMU
@@ -158,7 +153,7 @@ void RobotHexa :: init()
   }
   catch (imu::Error e)
   {
-    std::cerr << "error (imu): " << e.msg() << std::endl;
+    ROS_ERROR("error (imu): %s", e.msg());
   }
 
 #endif
@@ -273,14 +268,14 @@ void RobotHexa :: reset()
   {
     if(_controller.isOpen()==false)
   	{
-  	  std::cout<<"re-opening dynamixel's serial"<<std::endl;
+  	  ROS_INFO("re-opening dynamixel's serial");
   	  _controller.open_serial("/dev/ttyUSB0",B1000000);
   	}
     _controller.flush();
   }
   catch (dynamixel::Error e)
   {
-    std::cerr << "error (dynamixel): " << e.msg() << std::endl;
+    ROS_ERROR("error (dynamixel): %s", e.msg().c_str());
   }
 #ifdef IMU
   try
@@ -288,14 +283,14 @@ void RobotHexa :: reset()
 
     if(_imu.isOpen()==false)
     {
-      std::cout<<"re-opening imu's serial"<<std::endl;
+      ROS_INFO("re-opening imu's serial");
       _imu.open_serial("/dev/ttyUSB1");
     }
     _imu.flush();
   }
   catch (imu::Error e)
   {
-    std::cerr << "error (imu): " << e.msg() << std::endl;
+    ROS_ERROR("error (imu): %s", e.msg().c_str());
   }
 #endif
   ROS_INFO("setting all dynamixel to zero");
@@ -673,7 +668,7 @@ void RobotHexa ::write_contact(std::string const name)
   }
   else
   {
-    std::cout << "ERROR: Impossible to open the file." << std::endl;
+    ROS_ERROR("Impossible to open the file.");
   }
 
 
@@ -791,12 +786,12 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
 
     if (timev_duration.tv_sec >= duration)//*/index>=duration*1000000/sampling_interval_us)
     {
-      std::cout<<"time duration "<<timev_duration.tv_sec<<"."<<timev_duration.tv_usec<<std::endl;
+      ROS_INFO("time duration %ld.%ld", timev_duration.tv_sec, timev_duration.tv_usec);
 
 
   	  usleep(0.5e6);
   	  //send_ros_stop(1,transfer_number);
-      std::cout<<__FILE__<<"  "<<__LINE__<<std::endl;
+      ROS_INFO("%s %d", __FILE__, __LINE__);
 
 
       ROS_INFO_STREAM("------------------------------------- SECOND getSlamInfo() -----------------");
@@ -806,13 +801,13 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   	  getSlamInfo();
       ROS_INFO_STREAM("------------------------------------- SECOND getSlamInfo() ok -----------------");
 
-      std::cout<<__FILE__<<"  "<<__LINE__<<std::endl;
+      ROS_INFO("%s %d", __FILE__, __LINE__);
 
   	  _sub.shutdown();
-      std::cout<<__FILE__<<"  "<<__LINE__<<std::endl;
+      ROS_INFO("%s %d", __FILE__, __LINE__);
 
   	//  contactSmoothing(2);
-      std::cout<<__FILE__<<"  "<<__LINE__<<std::endl;
+      ROS_INFO("%s %d", __FILE__, __LINE__);
 
   	  break;
     }

@@ -195,7 +195,7 @@ std::vector<int> ControllerDuty::get_pos_dyna(float t, const std::vector<int>& c
 
       switch(leg)
       {
-        std::cout<<"COUCOU"<<std::endl;
+        // std::cout<<"COUCOU"<<std::endl;
         case 0:
           theta0= M_PI/8*_legs0commands[0][((int)floor(t*100))%100];  // marche que pour ARRAY_DIM =100
           theta1= M_PI/4*_legs0commands[1][((int)floor(t*100))%100];  // marche que pour ARRAY_DIM =100

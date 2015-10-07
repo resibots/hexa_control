@@ -48,7 +48,7 @@ int main(int argc, char **argv)
   }
   else
   {
-    std::cout << "ERREUR: Impossible d'ouvrir le fichier en lecture." << std::endl;
+    ROS_ERROR("Impossible d'ouvrir le fichier en lecture.");
     return 0;
   }
 
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 
     srv.request.duration=duration;
 
-    std::cout<<"execution of the "<<num_controller<<" th controller during "<< srv.request.duration<<" seconds"<<std::endl;
+    ROS_INFO("execution of the %d th controller during %f seconds", num_controller, srv.request.duration);
 
     if (client.call(srv))
   	{
@@ -163,7 +163,7 @@ int main(int argc, char **argv)
   	  //return 1;
   	}
   	std::cin.clear();
-  	std::cout<<"wait for key :"<<std::endl;
+  	ROS_INFO("wait for key :");
   	int ok;
   	std::cin>> ok;
   	std::cin.clear();
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
   }
 
   srv.request.duration=-2;//relax
-  std::cout<<"relax..."<<std::endl;
+  ROS_INFO("relax...");
   if (client.call(srv))
 	{
 	  ROS_INFO("executed");
