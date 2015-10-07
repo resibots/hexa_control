@@ -1,9 +1,9 @@
-#include "ros/ros.h"
-#include "ros/console.h"
-#include "hexa_control/Transfert.h"
+#include <ros/ros.h>
+#include <ros/console.h>
+#include <hexa_control/Transfert.h>
 
-#include "robotHexa.hpp"
-#include "controllerDuty.hpp"
+#include <hexa_control/robotHexa.hpp>
+#include <hexa_control/controllerDuty.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <sstream>

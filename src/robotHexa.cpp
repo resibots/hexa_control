@@ -1,7 +1,7 @@
 #include <iostream>
 #include <limits>
 #include <std_srvs/Empty.h>
-#include "robotHexa.hpp"
+#include <hexa_control/robotHexa.hpp>
 
 #include <fstream>
 

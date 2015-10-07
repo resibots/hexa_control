@@ -1,5 +1,5 @@
-#ifndef CONTROLLERPHASE_HPP
-#define CONTROLLERPHASE_HPP
+#ifndef HEXA_CONTROL_CONTROLLERDUTY_HPP
+#define HEXA_CONTROL_CONTROLLERDUTY_HPP
 
 #include <vector>
 #include <boost/shared_ptr.hpp>

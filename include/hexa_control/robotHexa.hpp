@@ -1,10 +1,10 @@
-#ifndef ROBOTHEXA_HPP
-#define ROBOTHEXA_HPP
+#ifndef HEXA_CONTROL_ROBOTHEXA_HPP
+#define HEXA_CONTROL_ROBOTHEXA_HPP
 
 #include <stdlib.h>
 #include <math.h>
 #include <dynamixel/dynamixel.hpp>
-#include "controllerDuty.hpp"
+#include <hexa_control/controllerDuty.hpp>
 
 #ifdef IMU
 #include <imu_razor/imu_razor.hpp>

@@ -1,4 +1,4 @@
-#include "controllerDuty.hpp"
+#include <hexa_control/controllerDuty.hpp>
 #define RAD2DYNMX28 651.42
 #define RAD2DYN 195.57
 

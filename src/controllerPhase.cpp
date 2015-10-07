@@ -1,4 +1,4 @@
-#include "controllerPhase.hpp"
+#include <hexa_control/controllerPhase.hpp>
 
 #define RAD2DYN 195.5
 #define RAD2DYNMX28 651.42
