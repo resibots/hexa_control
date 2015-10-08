@@ -20,7 +20,7 @@ int main(int argc, char **argv)
     torque_H=torque_limit>>8;
     torque_L=torque_limit%(torque_H<<8);
   }
-  ROS_INFO("setting max torques to %d(%d %d)", torque_limit, torque_H, torque_L);
+  ROS_INFO_STREAM("setting max torques to "<<torque_limit<<"("<<torque_H<<" "<< torque_L<<")");
   try
   {
     for(int i=1; i<=6;i++)//ax18
@@ -35,7 +35,7 @@ int main(int argc, char **argv)
   }
   catch (dynamixel::Error e)
   {
-    ROS_ERROR("error (dynamixel): %s", e.msg().c_str());
+    ROS_ERROR_STREAM("(dynamixel): " << e.msg());
   }
 
 }

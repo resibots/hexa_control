@@ -62,14 +62,14 @@ bool transfert(hexa_control::Transfert::Request  &req,
     statepub.publish(msg);
 
     res.covered_distance = hexapod_p->covered_distance();
-    ROS_INFO("Experiment finished");
+    ROS_INFO_STREAM("Experiment finished");
 
     return true;
   }
   catch (dynamixel::Error e)
   {
-    ROS_ERROR("error (dynamixel): %s %s %d", e.msg().c_str(), __FILE__, __LINE__);
-    ROS_ERROR("closing serials");
+    ROS_ERROR_STREAM("(dynamixel): " << e.msg() << " " <<__FILE__<<" " << __LINE__);
+    ROS_ERROR_STREAM("closing serials");
     hexapod_p->close_usb_controllers();
     exit(1);
   }
@@ -84,8 +84,8 @@ int main(int argc, char **argv)
   }
   catch (dynamixel::Error e)
   {
-    ROS_ERROR("error (dynamixel): %s %s %d", e.msg().c_str(), __FILE__, __LINE__);
-    ROS_ERROR("closing serials");
+    ROS_ERROR_STREAM("(dynamixel): " << e.msg() << " " <<__FILE__<<" " << __LINE__);
+    ROS_ERROR_STREAM("closing serials");
     hexapod_p->close_usb_controllers();
     return 1;
   }
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
      ros::console::notifyLoggerLevelsChanged();
   }
 
-  ROS_INFO("Ready to control the robot.");
+  ROS_INFO_STREAM("Ready to control the robot.");
   ros::spin();
   hexapod_p->relax();
   return 0;

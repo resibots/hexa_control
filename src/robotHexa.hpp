@@ -41,7 +41,7 @@ public:
 
   void relax()
   {
-    ROS_INFO("relax...");
+    ROS_INFO_STREAM("relax...");
     for (size_t i = 0; i < _actuators_ids.size(); ++i)
     {
       _controller.send(dynamixel::ax12::TorqueEnable(_actuators_ids[i], false));
@@ -53,7 +53,7 @@ public:
       _controller.recv(READ_DURATION, _status);
     }
 
-    ROS_INFO("done");
+    ROS_INFO_STREAM("done");
   }
   void enable()
   {
@@ -64,7 +64,7 @@ public:
         _controller.recv(READ_DURATION, _status);
       }
       catch (dynamixel::Error e){
-        ROS_ERROR("dynamixel (enable) id =%d %s %s %d", (int)_actuators_ids[i], e.msg().c_str(), __FILE__, __LINE__);
+        ROS_ERROR_STREAM("dynamixel (enable) id =" << (int)_actuators_ids[i] << " " << e.msg() << " " <<__FILE__<<" " << __LINE__);
       }
     }
 
