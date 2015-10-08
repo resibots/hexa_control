@@ -13,7 +13,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "hexapod_client", ros::init_options::NoSigintHandler);
   if (argc!= 2 && argc !=3 && argc !=4)
   {
-    ROS_INFO("usage: hexapod_client FILE (DURATION)  (STARTING BEHAVIOR)");
+    ROS_INFO_STREAM("usage: hexapod_client FILE (DURATION)  (STARTING BEHAVIOR)");
     return 1;
   }
 
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
   }
   else
   {
-    ROS_ERROR("Impossible d'ouvrir le fichier en lecture.");
+    ROS_ERROR_STREAM("Impossible d'ouvrir le fichier en lecture.");
     return 0;
   }
 
@@ -112,20 +112,20 @@ int main(int argc, char **argv)
 
   if(start<0 || start>=controllers.size())
   {
-    ROS_ERROR("BAD PARAMETER VALUE ");
+    ROS_ERROR_STREAM("BAD PARAMETER VALUE ");
     return 0;
   }
   if(duration<=0)
   {
     srv.request.duration=duration;
-    std::cout<<"relax..."<<std::endl;
+    ROS_INFO_STREAM("relax...");
     if (client.call(srv))
     {
-      ROS_INFO("executed");
+      ROS_INFO_STREAM("executed");
     }
     else
   	{
-  	  ROS_ERROR("Failed to call service");
+  	  ROS_ERROR_STREAM("Failed to call service");
   	  //return 1;
   	}
     return 0;
@@ -141,29 +141,29 @@ int main(int argc, char **argv)
 
     srv.request.duration=duration;
 
-    ROS_INFO("execution of the %d th controller during %f seconds", num_controller, srv.request.duration);
+    ROS_INFO_STREAM("execution of the "<<num_controller<<" th controller during "<< srv.request.duration<<" seconds");
 
     if (client.call(srv))
   	{
-  	  ROS_INFO("executed");
+  	  ROS_INFO_STREAM("executed");
   	}
     else
   	{
-  	  ROS_ERROR("Failed to call service");
+  	  ROS_ERROR_STREAM("Failed to call service");
   	  //return 1;
   	}
     srv.request.duration=-1;
     if (client.call(srv))
   	{
-  	  ROS_INFO("executed");
+  	  ROS_INFO_STREAM("executed");
   	}
     else
   	{
-  	  ROS_ERROR("Failed to call service");
+  	  ROS_ERROR_STREAM("Failed to call service");
   	  //return 1;
   	}
   	std::cin.clear();
-  	ROS_INFO("wait for key :");
+  	std::cout<<"wait for key :"<<std::endl;
   	int ok;
   	std::cin>> ok;
   	std::cin.clear();
@@ -172,14 +172,14 @@ int main(int argc, char **argv)
   }
 
   srv.request.duration=-2;//relax
-  ROS_INFO("relax...");
+  ROS_INFO_STREAM("relax...");
   if (client.call(srv))
 	{
-	  ROS_INFO("executed");
+	  ROS_INFO_STREAM("executed");
 	}
   else
 	{
-	  ROS_ERROR("Failed to call service");
+	  ROS_ERROR_STREAM("Failed to call service");
 	  //return 1;
 	}
   return 0;

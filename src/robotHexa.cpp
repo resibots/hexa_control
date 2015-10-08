@@ -1,10 +1,10 @@
 #include <iostream>
 #include <limits>
+#include <fstream>
+#include <cmath>
+
 #include <std_srvs/Empty.h>
 #include <hexa_control/robotHexa.hpp>
-
-#include <fstream>
-
 
 bool msg_recv;
 
@@ -30,10 +30,10 @@ bool msg_recv;
 void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
 {
 
-  std::cout<<__FILE__<<"  "<<__LINE__<<std::endl;
+  ROS_INFO_STREAM(__FILE__<<"  "<<__LINE__);
 
   ros::Duration tdiff = this->_request_time - msg.header.stamp;
-  ROS_INFO("reception delay: %f sec", tdiff.toSec());
+  ROS_INFO_STREAM("reception delay: "<<tdiff.toSec()<<" sec");
 
   if(tdiff <= ros::Duration(0,0))// responce received after end of movement.
   {
@@ -50,18 +50,15 @@ void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
   tf::poseMsgToTF(msg.pose.pose, temp);
   ROS_INFO_STREAM("rcv message:" << msg);
   _final_pos = _prev_pos.inverse()*temp;
-  ROS_INFO("Temp position: \nX:%f \n Y:%f \n Z:%f\n",
-           temp.getOrigin()[0], temp.getOrigin()[1],
-           temp.getOrigin()[2]);
-  ROS_INFO("Start position: \nX:%f \n Y:%f \n Z:%f\n",
-           _prev_pos.getOrigin()[0], _prev_pos.getOrigin()[1],
-           _prev_pos.getOrigin()[2]);
+  ROS_INFO_STREAM("Temp position: \nX:"<<temp.getOrigin()[0]<<" \n Y:"<<temp.getOrigin()[1]<<" \n Z:"<<temp.getOrigin()[2]<<"\n");
+  ROS_INFO_STREAM("Start position: \nX:"<<_prev_pos.getOrigin()[0]<<" \n Y:"<<_prev_pos.getOrigin()[1]<<" \n Z: "<<_prev_pos.getOrigin()[2]<<"\n");
   _prev_pos = temp;
-  ROS_INFO("move performed: \nX:%f \n Y:%f \n Z:%f\n",
-           _final_pos.getOrigin()[0], _final_pos.getOrigin()[1],
-           _final_pos.getOrigin()[2]);
-  _covered_distance = round(_final_pos.getOrigin()[0]*100)/100.0f;
-  ROS_INFO("distance traveled: %f", _covered_distance);
+  ROS_INFO_STREAM("move performed: \nX:"<<_final_pos.getOrigin()[0]<<" \n Y:"<<_final_pos.getOrigin()[1]<<" \n Z:"<<_final_pos.getOrigin()[2]<<"\n");
+  // Take the distance on XZ plane as the traveled distance, to account for
+  // the angle betwee the floor and the RGB-D camera (Xtion).
+  _covered_distance = hypot(_final_pos.getOrigin()[0], _final_pos.getOrigin()[2]);
+  _covered_distance = round(_covered_distance*100)/100.0f;
+  ROS_INFO_STREAM("distance traveled: "<<_covered_distance);
   /*
 
     if(_prev_pos.size()==0)
@@ -99,10 +96,11 @@ void RobotHexa :: init()
     const std::vector<byte_t>& ax12_ids = _controller.ax12_ids();
     if (!ax12_ids.size())
     {
-      ROS_ERROR("[ax12] no ax12 detected");
+      ROS_ERROR_STREAM("[ax12] no ax12 detected");
       return;
     }
-    ROS_INFO("[dynamixel] %lu dynamixel are connected", ax12_ids.size());
+    ROS_INFO_STREAM("[dynamixel] "<< ax12_ids.size()
+	            << " dynamixel are connected");
 
     // Set ids of the actuators
     // Order : leg 1 [limb 1, limb 2, limb 3], leg 2 [limb 1, limb 2, limb 3], etc.
@@ -137,11 +135,11 @@ void RobotHexa :: init()
     _actuators_ids.push_back(23);
 
 
-    ROS_INFO("initialisation completed");
+    ROS_INFO_STREAM("initialisation completed");
   }
   catch (dynamixel::Error e)
   {
-    ROS_ERROR("error (dynamixel): %s", e.msg().c_str());
+    ROS_ERROR_STREAM("(dynamixel): " << e.msg());
   }
 
 #ifdef IMU
@@ -153,7 +151,7 @@ void RobotHexa :: init()
   }
   catch (imu::Error e)
   {
-    ROS_ERROR("error (imu): %s", e.msg());
+    ROS_ERROR_STREAM("(imu): " << e.msg());
   }
 
 #endif
@@ -268,14 +266,14 @@ void RobotHexa :: reset()
   {
     if(_controller.isOpen()==false)
   	{
-  	  ROS_INFO("re-opening dynamixel's serial");
+  	  ROS_INFO_STREAM("re-opening dynamixel's serial");
   	  _controller.open_serial("/dev/ttyUSB0",B1000000);
   	}
     _controller.flush();
   }
   catch (dynamixel::Error e)
   {
-    ROS_ERROR("error (dynamixel): %s", e.msg().c_str());
+    ROS_ERROR_STREAM("(dynamixel): " << e.msg());
   }
 #ifdef IMU
   try
@@ -283,17 +281,17 @@ void RobotHexa :: reset()
 
     if(_imu.isOpen()==false)
     {
-      ROS_INFO("re-opening imu's serial");
+      ROS_INFO_STREAM("re-opening imu's serial");
       _imu.open_serial("/dev/ttyUSB1");
     }
     _imu.flush();
   }
   catch (imu::Error e)
   {
-    ROS_ERROR("error (imu): %s", e.msg().c_str());
+    ROS_ERROR_STREAM("(imu): " << e.msg());
   }
 #endif
-  ROS_INFO("setting all dynamixel to zero");
+  ROS_INFO_STREAM("setting all dynamixel to zero");
   //  setPID();
 
   enable();
@@ -360,7 +358,7 @@ void RobotHexa :: reset()
 
   sleep(1);
 
-  ROS_INFO("... done");
+  ROS_INFO_STREAM("... done");
 
 }
 
@@ -668,7 +666,7 @@ void RobotHexa ::write_contact(std::string const name)
   }
   else
   {
-    ROS_ERROR("Impossible to open the file.");
+    ROS_ERROR_STREAM("Impossible to open the file.");
   }
 
 
@@ -756,9 +754,9 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   ros::ServiceClient client = _node_p->serviceClient<std_srvs::Empty>("/reset_odom");
   std_srvs::Empty srv;
   if (client.call(srv)) {
-    ROS_INFO("reset_odom sent");
+    ROS_INFO_STREAM("reset_odom sent");
   } else {
-    ROS_ERROR("Failed to reset odometry");
+    ROS_INFO_STREAM("Failed to reset odometry");
   }
 
   _sub=_node_p->subscribe("vo",1,&RobotHexa::posCallback,this);
@@ -786,12 +784,12 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
 
     if (timev_duration.tv_sec >= duration)//*/index>=duration*1000000/sampling_interval_us)
     {
-      ROS_INFO("time duration %ld.%ld", timev_duration.tv_sec, timev_duration.tv_usec);
+      ROS_INFO_STREAM("time duration "<<timev_duration.tv_sec<<"."<<timev_duration.tv_usec);
 
 
   	  usleep(0.5e6);
   	  //send_ros_stop(1,transfer_number);
-      ROS_INFO("%s %d", __FILE__, __LINE__);
+      ROS_INFO_STREAM(__FILE__<<"  "<<__LINE__);
 
 
       ROS_INFO_STREAM("------------------------------------- SECOND getSlamInfo() -----------------");
@@ -801,13 +799,13 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   	  getSlamInfo();
       ROS_INFO_STREAM("------------------------------------- SECOND getSlamInfo() ok -----------------");
 
-      ROS_INFO("%s %d", __FILE__, __LINE__);
+      ROS_INFO_STREAM(__FILE__<<"  "<<__LINE__);
 
   	  _sub.shutdown();
-      ROS_INFO("%s %d", __FILE__, __LINE__);
+      ROS_INFO_STREAM(__FILE__<<"  "<<__LINE__);
 
   	//  contactSmoothing(2);
-      ROS_INFO("%s %d", __FILE__, __LINE__);
+      ROS_INFO_STREAM(__FILE__<<"  "<<__LINE__);
 
   	  break;
     }
