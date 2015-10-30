@@ -8,7 +8,7 @@ Please note that this is a work in progress and it might not work as well as exp
 Original author : Antoine Cully
 
 ## Dependencies
-hexa_control needs the nav_msgs package that can be retreived by APT-get with 'sudo apt-get install ros-YourDistro-nav-msgs.
+hexa_control needs the nav_msgs and geometry_msgs packages that can be retreived by APT-get with `sudo apt-get install ros-YourDistro-nav-msgs` and `sudo apt-get install ros-YourDistro-geometry-msgs`.
 
 In addition, it requires libdynamixel to be available on the system. It can be found on the **HOME** folder by default. You can change where to search for libdynamixel by setting the environmental variable *RESIBOTS_DIR* to the path where libdynamixel is located.
 
