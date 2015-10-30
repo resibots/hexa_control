@@ -188,10 +188,6 @@ void RobotHexa :: init()
   _correction[17] = 1024;
 
   //  setPID();
-
-  // subscribe to filter reset
-  _reset_filter = _node_p->advertise<geometry_msgs::PoseWithCovarianceStamped>("/set_pose", 1000);
-
 }
 
 void RobotHexa::setPID()
@@ -685,6 +681,9 @@ void RobotHexa :: initRosNode(  int argc ,char** argv,boost::shared_ptr<ros::Nod
   _node_p = node_p;
   //    _chatter_pub  = _node_p->advertise<rgbdslam::SferesCmd>("sferes_cmd", 1);
 
+  // subscribe to filter reset
+  _reset_filter = _node_p->advertise<geometry_msgs::PoseWithCovarianceStamped>("/set_pose", 1000);
+
 }
 /*void RobotHexa ::send_ros_start(int nbrun,int nbtrans)
   {
@@ -756,6 +755,15 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   bool first=true;
 
   // reset odometry
+  ros::ServiceClient client = _node_p->serviceClient<std_srvs::Empty>("/reset_odom");
+  std_srvs::Empty srv;
+  if (client.call(srv)) {
+    ROS_INFO_STREAM("reset_odom sent");
+  } else {
+    ROS_INFO_STREAM("Failed to reset odometry");
+  }
+
+  // reset filter
   geometry_msgs::PoseWithCovarianceStamped tmp;
   tmp.header.stamp = ros::Time::now();
   tmp.header.frame_id = "/odom";
@@ -770,7 +778,7 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   tmp.pose.pose.orientation.w = 1;
 
   _reset_filter.publish(tmp);
-  ROS_INFO_STREAM("reset_odom sent");
+  ROS_INFO_STREAM("reset_filter sent");
 
   _sub=_node_p->subscribe("vo",1,&RobotHexa::posCallback,this);
   ROS_INFO_STREAM("------------------------------------- First getSlamInfo() -----------------");
