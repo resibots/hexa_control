@@ -681,8 +681,8 @@ void RobotHexa :: initRosNode(  int argc ,char** argv,boost::shared_ptr<ros::Nod
   _node_p = node_p;
   //    _chatter_pub  = _node_p->advertise<rgbdslam::SferesCmd>("sferes_cmd", 1);
 
-  // subscribe to filter reset
-  _reset_filter = _node_p->advertise<geometry_msgs::PoseWithCovarianceStamped>("/set_pose", 1000);
+  // create publisher to reset UKF filter (robot_localization)
+  _reset_filter_pub = _node_p->advertise<geometry_msgs::PoseWithCovarianceStamped>("/set_pose", 1000);
 
 }
 /*void RobotHexa ::send_ros_start(int nbrun,int nbtrans)
@@ -763,22 +763,28 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
     ROS_INFO_STREAM("Failed to reset odometry");
   }
 
-  // reset filter
-  geometry_msgs::PoseWithCovarianceStamped tmp;
-  tmp.header.stamp = ros::Time::now();
-  tmp.header.frame_id = "/odom";
+  // reset UKF filter (robot_localization)
+  // by publishing a PoseWithCovarianceStamped message
+  geometry_msgs::PoseWithCovarianceStamped pose_with_cov_st;
 
-  tmp.pose.pose.position.x = 0;
-  tmp.pose.pose.position.y = 0;
-  tmp.pose.pose.position.z = 0;
+  // set message's header
+  pose_with_cov_st.header.stamp = ros::Time::now();
+  pose_with_cov_st.header.frame_id = "/odom";
 
-  tmp.pose.pose.orientation.x = 0;
-  tmp.pose.pose.orientation.y = 0;
-  tmp.pose.pose.orientation.z = 0;
-  tmp.pose.pose.orientation.w = 1;
+  // set position
+  pose_with_cov_st.pose.pose.position.x = 0;
+  pose_with_cov_st.pose.pose.position.y = 0;
+  pose_with_cov_st.pose.pose.position.z = 0;
 
-  _reset_filter.publish(tmp);
-  ROS_INFO_STREAM("reset_filter sent");
+  // set orientation
+  pose_with_cov_st.pose.pose.orientation.x = 0;
+  pose_with_cov_st.pose.pose.orientation.y = 0;
+  pose_with_cov_st.pose.pose.orientation.z = 0;
+  pose_with_cov_st.pose.pose.orientation.w = 1;
+
+  // publish message to reset UKF filter
+  _reset_filter_pub.publish(pose_with_cov_st);
+  ROS_INFO_STREAM("Message to reset UKF filter sent");
 
   _sub=_node_p->subscribe("vo",1,&RobotHexa::posCallback,this);
   ROS_INFO_STREAM("------------------------------------- First getSlamInfo() -----------------");

@@ -177,7 +177,7 @@ protected:
   boost::shared_ptr<ros::NodeHandle> _node_p;
   ros::Publisher  _chatter_pub;
   ros::Subscriber _sub;
-  ros::Publisher _reset_filter;
+  ros::Publisher _reset_filter_pub;
 };
 
 #endif
