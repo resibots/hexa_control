@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   nav_msgs
   message_generation
+  geometry_msgs
 )
 
 add_service_files(
@@ -20,7 +21,7 @@ generate_messages(
 )
 
 catkin_package(
- CATKIN_DEPENDS roscpp std_msgs nav_msgs message_runtime
+ CATKIN_DEPENDS roscpp std_msgs nav_msgs message_runtime geometry_msgs
 )
 
 if ("$ENV{RESIBOTS_DIR}" STREQUAL "")
