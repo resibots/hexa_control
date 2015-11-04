@@ -1,0 +1,8 @@
+# Serial
+SerialPort: /dev/ttyACM0
+
+# Baudrate
+SerialBaudrate: B1000000
+
+# Odometry Topic
+Odom: /odometry/filtered

@@ -87,10 +87,17 @@ void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
 
 void RobotHexa :: init()
 {
+  ros::NodeHandle n_p("~");
+  // Load Server Parameters
+  n_p.param("SerialPort", _serial_port, std::string("/dev/ttyACM0"));
+  n_p.param("SerialBaudrate", _serial_baudrate, B1000000);
+  n_p.param("Odom", _odom, std::string("/odometry/filtered"));
+
   try
   {
     // _controller.open_serial("/dev/ttyACM0",B1000000); // FIXME: use parameters instead
-    _controller.open_serial("/dev/ttyUSB0", B1000000);//B115200); // FIXME: use parameters instead
+    // _controller.open_serial("/dev/ttyUSB0", B1000000);//B115200); // FIXME: use parameters instead
+    _controller.open_serial(_serial_port, _serial_baudrate);
 
     // Scan actuators IDs
     _controller.scan_ax12s();
@@ -683,7 +690,6 @@ void RobotHexa :: initRosNode(  int argc ,char** argv,boost::shared_ptr<ros::Nod
 
   // create publisher to reset UKF filter (robot_localization)
   _reset_filter_pub = _node_p->advertise<geometry_msgs::PoseWithCovarianceStamped>("/set_pose", 1000);
-
 }
 /*void RobotHexa ::send_ros_start(int nbrun,int nbtrans)
   {

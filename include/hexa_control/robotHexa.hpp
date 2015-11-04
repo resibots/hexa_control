@@ -178,6 +178,9 @@ protected:
   ros::Publisher  _chatter_pub;
   ros::Subscriber _sub;
   ros::Publisher _reset_filter_pub;
+
+  std::string _serial_port, _odom;
+  int _serial_baudrate;
 };
 
 #endif
