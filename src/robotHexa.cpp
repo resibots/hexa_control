@@ -90,7 +90,21 @@ void RobotHexa :: init()
   ros::NodeHandle n_p("~");
   // Load Server Parameters
   n_p.param("SerialPort", _serial_port, std::string("/dev/ttyACM0"));
-  n_p.param("SerialBaudrate", _serial_baudrate, B1000000);
+  n_p.param("SerialBaudrate", _serial_baudrate, 1);
+  switch(_serial_baudrate)
+  {
+    case 1:
+      _serial_baudrate = B1000000;
+      break;
+    case 16:
+      _serial_baudrate = B115200;
+      break;
+    case 34:
+      _serial_baudrate = B57600;
+      break;
+    default:
+      _serial_baudrate = B1000000;
+  }
   n_p.param("Odom", _odom, std::string("/odometry/filtered"));
 
   try
@@ -275,7 +289,8 @@ void RobotHexa :: reset()
     if(_controller.isOpen()==false)
   	{
   	  ROS_INFO_STREAM("re-opening dynamixel's serial");
-  	  _controller.open_serial("/dev/ttyUSB0",B1000000);
+  	  // _controller.open_serial("/dev/ttyUSB0",B1000000);
+      _controller.open_serial(_serial_port, _serial_baudrate);
   	}
     _controller.flush();
   }
@@ -792,7 +807,7 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   _reset_filter_pub.publish(pose_with_cov_st);
   ROS_INFO_STREAM("Message to reset UKF filter sent");
 
-  _sub=_node_p->subscribe("vo",1,&RobotHexa::posCallback,this);
+  _sub=_node_p->subscribe(_odom,1,&RobotHexa::posCallback,this);
   ROS_INFO_STREAM("------------------------------------- First getSlamInfo() -----------------");
   usleep(1e6);
   getSlamInfo(); // TODO : commented in the attempt to fix the experiment
