@@ -294,7 +294,7 @@ void RobotHexa :: reset()
   	{
   	  ROS_INFO_STREAM("re-opening dynamixel's serial");
   	  // _controller.open_serial("/dev/ttyUSB0",B1000000);
-      _controller.open_serial(_serial_port, _serial_baudrate);
+  	  _controller.open_serial(_serial_port, _serial_baudrate);
   	}
     _controller.flush();
   }
