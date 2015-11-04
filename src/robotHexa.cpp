@@ -90,8 +90,10 @@ void RobotHexa :: init()
   ros::NodeHandle n_p("~");
   // Load Server Parameters
   n_p.param("SerialPort", _serial_port, std::string("/dev/ttyACM0"));
-  n_p.param("SerialBaudrate", _serial_baudrate, 1);
-  switch(_serial_baudrate)
+  n_p.param("SerialBaudrate", _baudrate_choice, 1);
+
+  // Set baudrate according to choice
+  switch(_baudrate_choice)
   {
     case 1:
       _serial_baudrate = B1000000;
@@ -105,6 +107,7 @@ void RobotHexa :: init()
     default:
       _serial_baudrate = B1000000;
   }
+
   n_p.param("Odom", _odom, std::string("/odometry/filtered"));
 
   try

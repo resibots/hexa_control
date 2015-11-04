@@ -180,7 +180,7 @@ protected:
   ros::Publisher _reset_filter_pub;
 
   std::string _serial_port, _odom;
-  int _serial_baudrate;
+  int _serial_baudrate, _baudrate_choice;
 };
 
 #endif
