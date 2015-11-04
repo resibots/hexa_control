@@ -106,6 +106,7 @@ void RobotHexa :: init()
       break;
     default:
       _serial_baudrate = B1000000;
+      ROS_WARN_STREAM("No baudrate selected or invalid choice! Setting to default: B1000000");
   }
 
   n_p.param("Odom", _odom, std::string("/odometry/filtered"));
