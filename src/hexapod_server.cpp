@@ -1,9 +1,9 @@
-#include "ros/ros.h"
-#include "ros/console.h"
-#include "hexa_control/Transfert.h"
+#include <ros/ros.h>
+#include <ros/console.h>
+#include <hexa_control/Transfert.h>
 
-#include "robotHexa.hpp"
-#include "controllerDuty.hpp"
+#include <hexa_control/robotHexa.hpp>
+#include <hexa_control/controllerDuty.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <sstream>
@@ -77,6 +77,8 @@ bool transfert(hexa_control::Transfert::Request  &req,
 
 int main(int argc, char **argv)
 {
+  ros::init(argc, argv, "hexapod_server");
+  boost::shared_ptr<ros::NodeHandle> node_p= boost::shared_ptr<ros::NodeHandle>(new ros::NodeHandle());
   //boost::shared_ptr<dynamixel::Usb2Dynamixel controller> controller;
   try
   {
@@ -90,9 +92,6 @@ int main(int argc, char **argv)
     return 1;
   }
 
-
-  ros::init(argc, argv, "hexapod_server");
-  boost::shared_ptr<ros::NodeHandle> node_p= boost::shared_ptr<ros::NodeHandle>(new ros::NodeHandle());
   hexapod_p->initRosNode(argc,argv,node_p);
   ros::ServiceServer service = node_p->advertiseService("Transfert", transfert);
   statepub = node_p->advertise<std_msgs::String>("transfertState", 10);

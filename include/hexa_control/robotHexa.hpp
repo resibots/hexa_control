@@ -1,10 +1,10 @@
-#ifndef ROBOTHEXA_HPP
-#define ROBOTHEXA_HPP
+#ifndef HEXA_CONTROL_ROBOTHEXA_HPP
+#define HEXA_CONTROL_ROBOTHEXA_HPP
 
 #include <stdlib.h>
 #include <math.h>
 #include <dynamixel/dynamixel.hpp>
-#include "controllerDuty.hpp"
+#include <hexa_control/controllerDuty.hpp>
 
 #ifdef IMU
 #include <imu_razor/imu_razor.hpp>
@@ -178,6 +178,9 @@ protected:
   ros::Publisher  _chatter_pub;
   ros::Subscriber _sub;
   ros::Publisher _reset_filter_pub;
+
+  std::string _serial_port, _odom;
+  int _serial_baudrate, _baudrate_choice;
 };
 
 #endif

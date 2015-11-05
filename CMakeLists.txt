@@ -34,6 +34,7 @@ link_directories("${libdynamixel_dir}/lib")
 include_directories(
   ${catkin_INCLUDE_DIRS}
   "${libdynamixel_dir}/include"
+  include
 )
 
 add_executable(hexapod_client src/hexapod_client.cpp)

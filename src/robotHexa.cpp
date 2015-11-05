@@ -3,10 +3,9 @@
 #include <fstream>
 #include <cmath>
 
-#include "robotHexa.hpp"
-
 #include <std_srvs/Empty.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <hexa_control/robotHexa.hpp>
 
 bool msg_recv;
 
@@ -88,10 +87,35 @@ void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
 
 void RobotHexa :: init()
 {
+  ros::NodeHandle n_p("~");
+  // Load Server Parameters
+  n_p.param("SerialPort", _serial_port, std::string("/dev/ttyACM0"));
+  n_p.param("SerialBaudrate", _baudrate_choice, 1);
+
+  // Set baudrate according to choice
+  switch(_baudrate_choice)
+  {
+    case 1:
+      _serial_baudrate = B1000000;
+      break;
+    case 16:
+      _serial_baudrate = B115200;
+      break;
+    case 34:
+      _serial_baudrate = B57600;
+      break;
+    default:
+      _serial_baudrate = B1000000;
+      ROS_WARN_STREAM("Invalid choice: "<<_baudrate_choice<<"! Setting to default: B1000000");
+  }
+
+  n_p.param("Odom", _odom, std::string("/odometry/filtered"));
+
   try
   {
     // _controller.open_serial("/dev/ttyACM0",B1000000); // FIXME: use parameters instead
-    _controller.open_serial("/dev/ttyUSB0", B1000000);//B115200); // FIXME: use parameters instead
+    // _controller.open_serial("/dev/ttyUSB0", B1000000);//B115200); // FIXME: use parameters instead
+    _controller.open_serial(_serial_port, _serial_baudrate);
 
     // Scan actuators IDs
     _controller.scan_ax12s();
@@ -188,6 +212,7 @@ void RobotHexa :: init()
   _correction[17] = 1024;
 
   //  setPID();
+
 }
 
 void RobotHexa::setPID()
@@ -268,7 +293,8 @@ void RobotHexa :: reset()
     if(_controller.isOpen()==false)
   	{
   	  ROS_INFO_STREAM("re-opening dynamixel's serial");
-  	  _controller.open_serial("/dev/ttyUSB0",B1000000);
+  	  // _controller.open_serial("/dev/ttyUSB0",B1000000);
+  	  _controller.open_serial(_serial_port, _serial_baudrate);
   	}
     _controller.flush();
   }
@@ -683,7 +709,6 @@ void RobotHexa :: initRosNode(  int argc ,char** argv,boost::shared_ptr<ros::Nod
 
   // create publisher to reset UKF filter (robot_localization)
   _reset_filter_pub = _node_p->advertise<geometry_msgs::PoseWithCovarianceStamped>("/set_pose", 1000);
-
 }
 /*void RobotHexa ::send_ros_start(int nbrun,int nbtrans)
   {
@@ -786,7 +811,7 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   _reset_filter_pub.publish(pose_with_cov_st);
   ROS_INFO_STREAM("Message to reset UKF filter sent");
 
-  _sub=_node_p->subscribe("vo",1,&RobotHexa::posCallback,this);
+  _sub=_node_p->subscribe(_odom,1,&RobotHexa::posCallback,this);
   ROS_INFO_STREAM("------------------------------------- First getSlamInfo() -----------------");
   usleep(1e6);
   getSlamInfo(); // TODO : commented in the attempt to fix the experiment
