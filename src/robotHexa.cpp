@@ -109,7 +109,7 @@ void RobotHexa :: init()
       ROS_WARN_STREAM("Invalid choice: "<<_baudrate_choice<<"! Setting to default: B1000000");
   }
 
-  n_p.param("Odom", _odom, std::string("/odometry/filtered"));
+  n_p.param("Odom", _odom, std::string("/odom"));
 
   try
   {

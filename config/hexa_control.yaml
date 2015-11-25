@@ -5,4 +5,5 @@ SerialPort: /dev/ttyACM0
 SerialBaudrate: 1
 
 # Odometry Topic
-Odom: /odometry/filtered
+# Odom: /odometry/filtered
+Odom: /odom
