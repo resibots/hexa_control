@@ -7,11 +7,9 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <hexa_control/robotHexa.hpp>
 
-bool msg_recv;
-
 /*void RobotHexa :: posCallback(const rgbdslam::XtionDisplacement& msg)
   {
-  msg_recv=true;
+  _odom_message_received=true;
 
   ROS_INFO("Commandes recues: \nX:%f \n Y:%f \n Z:%f \n duraction: %f  ",msg.x,msg.y,msg.z,msg.duration);
   _covered_distance=round(msg.x * 100) / 100.0f;
@@ -39,7 +37,7 @@ void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
   if(tdiff <= ros::Duration(0,0))// responce received after end of movement.
   {
     ROS_DEBUG_STREAM("odometry message after end of movement; processing");
-    msg_recv = true;
+    _odom_message_received = true;
   }
   else
   {
@@ -734,8 +732,8 @@ void RobotHexa :: initRosNode(  int argc ,char** argv,boost::shared_ptr<ros::Nod
 void RobotHexa:: getSlamInfo()
 {
   this->_request_time=ros::Time::now();
-  msg_recv=false;
-  while(msg_recv ==false)
+  _odom_message_received=false;
+  while(_odom_message_received ==false)
     ros::spinOnce();
 
 }

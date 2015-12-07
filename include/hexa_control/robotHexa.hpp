@@ -154,6 +154,7 @@ protected:
   void _read_contacts();
   dynamixel::Usb2Dynamixel _controller;
   float _covered_distance;
+  bool _odom_message_received;
 
 #ifdef IMU
   imu::Usb2Imu _imu;
