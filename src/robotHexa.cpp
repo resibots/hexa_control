@@ -26,7 +26,7 @@
 
 
 
-void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
+void RobotHexa::posCallback(const nav_msgs::Odometry& msg)
 {
 
   ROS_INFO_STREAM(__FILE__<<"  "<<__LINE__);
@@ -83,7 +83,7 @@ void RobotHexa :: posCallback(const nav_msgs::Odometry& msg)
 }
 
 
-void RobotHexa :: init()
+void RobotHexa::init()
 {
   ros::NodeHandle n_p("~");
   // Load Server Parameters
@@ -107,7 +107,12 @@ void RobotHexa :: init()
       ROS_WARN_STREAM("Invalid choice: "<<_baudrate_choice<<"! Setting to default: B1000000");
   }
 
-  n_p.param("Odom", _odom, std::string("/odom"));
+  n_p.param("Odom", _odom_topic_name, std::string("/odom"));
+  n_p.param("OdomEnable", _odom_enable, true);
+
+  // set the covered distance to -1 if we disabled the visual odometry
+  if (!_odom_enable)
+    _covered_distance = -1;
 
   try
   {
@@ -284,7 +289,7 @@ void RobotHexa::applyCorrection(std::vector<int>& pos)
     pos[i]+= _correction[i];
 }
 
-void RobotHexa :: reset()
+void RobotHexa::reset()
 {
   try
   {
@@ -388,7 +393,7 @@ void RobotHexa :: reset()
 }
 
 
-void RobotHexa:: position_zero()
+void RobotHexa::position_zero()
 {
   ROS_DEBUG_STREAM("initial position");
   enable();
@@ -441,7 +446,7 @@ void RobotHexa:: position_zero()
 
 
 
-void RobotHexa :: _read_contacts()
+void RobotHexa::_read_contacts()
 {
 
   _controller.send(dynamixel::ax12::ReadData(11,dynamixel::ax12::ctrl::present_load_lo,2));
@@ -676,7 +681,7 @@ void RobotHexa::contactSmoothing(int length)
   }
 }
 
-void RobotHexa ::write_contact(std::string const name)
+void RobotHexa::write_contact(std::string const name)
 {
 
 
@@ -699,7 +704,7 @@ void RobotHexa ::write_contact(std::string const name)
 
 
 
-void RobotHexa :: initRosNode(  int argc ,char** argv,boost::shared_ptr<ros::NodeHandle> node_p)
+void RobotHexa::initRosNode(  int argc ,char** argv,boost::shared_ptr<ros::NodeHandle> node_p)
 {
   //  ros::init(argc, argv, "AlgoTransf",ros::init_options::NoSigintHandler);
   _node_p = node_p;
@@ -729,7 +734,7 @@ void RobotHexa :: initRosNode(  int argc ,char** argv,boost::shared_ptr<ros::Nod
   }*/
 
 
-void RobotHexa:: getSlamInfo()
+void RobotHexa::getSlamInfo()
 {
   this->_request_time=ros::Time::now();
   _odom_message_received=false;
@@ -739,7 +744,7 @@ void RobotHexa:: getSlamInfo()
 }
 
 
-void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transfer_number)
+void RobotHexa::transfer(ControllerDuty& controller, float duration,int transfer_number)
 {
   ROS_DEBUG_STREAM("Entering transfer.");
 
@@ -777,45 +782,40 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   // Ticks loop ///////////////////////////
   bool first=true;
 
-  // reset odometry
-  ros::ServiceClient client = _node_p->serviceClient<std_srvs::Empty>("/reset_odom");
-  std_srvs::Empty srv;
-  if (client.call(srv)) {
-    ROS_INFO_STREAM("reset_odom sent");
-  } else {
-    ROS_INFO_STREAM("Failed to reset odometry");
+  if (_odom_enable) {
+    // reset odometry
+    ros::ServiceClient client = _node_p->serviceClient<std_srvs::Empty>("/reset_odom");
+    std_srvs::Empty srv;
+    if (client.call(srv)) {
+      ROS_INFO_STREAM("reset_odom sent");
+    } else {
+      ROS_INFO_STREAM("Failed to reset odometry");
+    }
+    // reset UKF filter (robot_localization)
+    // by publishing a PoseWithCovarianceStamped message
+    geometry_msgs::PoseWithCovarianceStamped pose_with_cov_st;
+    // set message's header
+    pose_with_cov_st.header.stamp = ros::Time::now();
+    pose_with_cov_st.header.frame_id = "/odom";
+    // set position
+    pose_with_cov_st.pose.pose.position.x = 0;
+    pose_with_cov_st.pose.pose.position.y = 0;
+    pose_with_cov_st.pose.pose.position.z = 0;
+    // set orientation
+    pose_with_cov_st.pose.pose.orientation.x = 0;
+    pose_with_cov_st.pose.pose.orientation.y = 0;
+    pose_with_cov_st.pose.pose.orientation.z = 0;
+    pose_with_cov_st.pose.pose.orientation.w = 1;
+    // publish message to reset UKF filter
+    _reset_filter_pub.publish(pose_with_cov_st);
+    ROS_INFO_STREAM("Message to reset UKF filter sent");
+    _sub=_node_p->subscribe(_odom_topic_name,1,&RobotHexa::posCallback,this);
+    ROS_INFO_STREAM("------------------------------------- First getSlamInfo() -----------------");
+    usleep(1e6);
+    getSlamInfo(); // TODO : commented in the attempt to fix the experiment
+    //    send_ros_start(1,transfer_number);
+    ROS_INFO_STREAM("------------------------------------- First getSlamInfo() OK -----------------");
   }
-
-  // reset UKF filter (robot_localization)
-  // by publishing a PoseWithCovarianceStamped message
-  geometry_msgs::PoseWithCovarianceStamped pose_with_cov_st;
-
-  // set message's header
-  pose_with_cov_st.header.stamp = ros::Time::now();
-  pose_with_cov_st.header.frame_id = "/odom";
-
-  // set position
-  pose_with_cov_st.pose.pose.position.x = 0;
-  pose_with_cov_st.pose.pose.position.y = 0;
-  pose_with_cov_st.pose.pose.position.z = 0;
-
-  // set orientation
-  pose_with_cov_st.pose.pose.orientation.x = 0;
-  pose_with_cov_st.pose.pose.orientation.y = 0;
-  pose_with_cov_st.pose.pose.orientation.z = 0;
-  pose_with_cov_st.pose.pose.orientation.w = 1;
-
-  // publish message to reset UKF filter
-  _reset_filter_pub.publish(pose_with_cov_st);
-  ROS_INFO_STREAM("Message to reset UKF filter sent");
-
-  _sub=_node_p->subscribe(_odom,1,&RobotHexa::posCallback,this);
-  ROS_INFO_STREAM("------------------------------------- First getSlamInfo() -----------------");
-  usleep(1e6);
-  getSlamInfo(); // TODO : commented in the attempt to fix the experiment
-  //    send_ros_start(1,transfer_number);
-
-  ROS_INFO_STREAM("------------------------------------- First getSlamInfo() OK -----------------");
 
   usleep(0.5e6);
   timerclear(&timev_init);
@@ -841,13 +841,14 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
   	  //send_ros_stop(1,transfer_number);
       ROS_INFO_STREAM(__FILE__<<"  "<<__LINE__);
 
+      if (_odom_enable) {
+        ROS_INFO_STREAM("------------------------------------- SECOND getSlamInfo() -----------------");
+        usleep(1e6);
+        ROS_INFO_STREAM("sleep done");
 
-      ROS_INFO_STREAM("------------------------------------- SECOND getSlamInfo() -----------------");
-      usleep(1e6);
-      ROS_INFO_STREAM("sleep done");
-
-  	  getSlamInfo();
-      ROS_INFO_STREAM("------------------------------------- SECOND getSlamInfo() ok -----------------");
+  	    getSlamInfo();
+        ROS_INFO_STREAM("------------------------------------- SECOND getSlamInfo() ok -----------------");
+      }
 
       ROS_INFO_STREAM(__FILE__<<"  "<<__LINE__);
 
@@ -885,8 +886,6 @@ void RobotHexa :: transfer(ControllerDuty& controller, float duration,int transf
 
 
     }
-
-
 
     // On fait un step de sampling_interval_us (on suppose qu'une step ne dépasse pas 1 sec)
     if (timev_diff.tv_usec >= sampling_interval_us)

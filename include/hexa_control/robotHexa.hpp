@@ -135,6 +135,10 @@ public:
   // void send_ros_stop(int nbrun,int nbtrans);
   //void posCallback(const rgbdslam::XtionDisplacement& msg);
   void posCallback(const nav_msgs::Odometry& msg);
+  /// Give the distance covered by the robot using the given controller.
+  /// The actual data is available only after the transfer methd has finished.
+  /// Also, if the visual odometry was disabled, the return value will invariably
+  /// be -1.
   float covered_distance()
   {
     return _covered_distance;
@@ -180,8 +184,10 @@ protected:
   ros::Subscriber _sub;
   ros::Publisher _reset_filter_pub;
 
-  std::string _serial_port, _odom;
+  // Store the values of parameters for this ROS node
+  std::string _serial_port, _odom_topic_name;
   int _serial_baudrate, _baudrate_choice;
+  bool _odom_enable;
 };
 
 #endif
