@@ -28,39 +28,23 @@ int main(int argc, char **argv)
   std::vector<std::vector<float> > controllers;
   if(monFlux)
   {
-    // Old broken way to parse the file, since the format evolved
-    // Yet, the example files should be removed beforhand.
-    // while(!monFlux.eof())
-    // {
-    //   std::vector<float> controller;
-    //   for(int i =0;i<43;i++)
-    //   {
-    //     if(monFlux.eof())
-    //       break;
-    //     float data;
-    //     monFlux>>data;
-    //     //	      ROS_INFO("%d",data);
-    //     if(i>=7)
-    //       controller.push_back(data);
-    //     //  std::cout<<data<<" ";
-    //   }
-    //   if(controller.size()==36)
-    //     controllers.push_back(controller);
-    //   //	  std::cout<<std::endl;
-    // }
+    // ignore the first line of the file; it describes the format of the file
     monFlux.ignore(100, '\n');
+
     bool even_line = true;
+
     while(!monFlux.eof())
     {
+      // even lines are ignored for they contain meta-data
       if(even_line)
       {
         monFlux.ignore(100, '\n');
         even_line = !even_line;
-        std::cout << "ignored line" << std::endl;
       }
-      else
+      else // odd lines contain the controller parameters.
       {
         std::vector<float> controller;
+
         for(int i=0; i<36; i++)
         {
           if(monFlux.eof())
@@ -68,13 +52,14 @@ int main(int argc, char **argv)
           float controller_parameter;
           monFlux >> controller_parameter;
           controller.push_back(controller_parameter);
-        //   std::cout << controller_parameter << " ";
         }
-        even_line = !even_line;
+
         if (controller.size() == 36)
             controllers.push_back(controller);
+
+        // be sure to take the remaining characters until the end of line
         monFlux.ignore(1, '\n');
-        // std::cout << "\n";
+        even_line = !even_line;
       }
     }
   }
