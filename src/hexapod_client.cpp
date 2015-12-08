@@ -1,12 +1,13 @@
-#include <ros/ros.h>
+// Package-specific includes
 #include <hexa_control/Transfert.h>
+
+// ROS includes
+#include <ros/ros.h>
+
+// Standard includes
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
-
-
-
-
 
 int main(int argc, char **argv)
 {
@@ -22,28 +23,44 @@ int main(int argc, char **argv)
   hexa_control::Transfert srv;
 
   //  std::ifstream monFlux("/home/antoinecully/fuerte_workspace/sandbox/hexa_control/results.dat");  //Ouverture d'un fichier en lecture
-  std::ifstream monFlux(argv[1]);  //Ouverture d'un fichier en lecture
+  std::ifstream monFlux(argv[1]); // Open the transfer file for reading
 
   std::vector<std::vector<float> > controllers;
   if(monFlux)
   {
+    // ignore the first line of the file; it describes the format of the file
+    monFlux.ignore(100, '\n');
+
+    bool even_line = true;
+
     while(!monFlux.eof())
     {
-      std::vector<float> controller;
-      for(int i =0;i<43;i++)
+      // even lines are ignored for they contain meta-data
+      if(even_line)
       {
-        if(monFlux.eof())
-          break;
-        float data;
-        monFlux>>data;
-        //	      ROS_INFO("%d",data);
-        if(i>=7)
-          controller.push_back(data);
-        //  std::cout<<data<<" ";
+        monFlux.ignore(100, '\n');
+        even_line = !even_line;
       }
-      if(controller.size()==36)
-        controllers.push_back(controller);
-      //	  std::cout<<std::endl;
+      else // odd lines contain the controller parameters.
+      {
+        std::vector<float> controller;
+
+        for(int i=0; i<36; i++)
+        {
+          if(monFlux.eof())
+            break;
+          float controller_parameter;
+          monFlux >> controller_parameter;
+          controller.push_back(controller_parameter);
+        }
+
+        if (controller.size() == 36)
+            controllers.push_back(controller);
+
+        // be sure to take the remaining characters until the end of line
+        monFlux.ignore(1, '\n');
+        even_line = !even_line;
+      }
     }
   }
   else
