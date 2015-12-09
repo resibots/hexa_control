@@ -17,7 +17,7 @@ bool transfert(hexa_control::Transfert::Request  &req,
   try
   {
     ROS_INFO_STREAM("Requested motion duration : " << req.duration);
-    if(req.duration < -1)
+    else if(req.duration <= -2)
     {
       hexapod_p->relax();
       return true;
