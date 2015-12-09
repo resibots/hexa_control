@@ -289,6 +289,7 @@ void RobotHexa::applyCorrection(std::vector<int>& pos)
     pos[i]+= _correction[i];
 }
 
+/* November2015: Older version, to be removed if the new one works fine
 void RobotHexa::reset()
 {
   try
@@ -328,55 +329,9 @@ void RobotHexa::reset()
 
   std::vector<int> pos(_actuators_ids.size());
 
-  // FIXME : what is the point of that code ?
-  // for (size_t i = 0; i < _actuators_ids.size(); ++i)
-  //   if(_actuators_ids[i]>=20)
-  //     pos[i]= 2048;
-  //   else if (_actuators_ids[i] >= 10) // mx28
-  //     pos[i] = 1024;
-  //   else
-  //     pos[i] = 2048;
-  //
-  // applyCorrection(pos);
-  // _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
-  // _controller.recv(READ_DURATION, _status);
-  //
-  // pos.clear();
-  // pos.resize(_actuators_ids.size());
-  // usleep(0.5e6);
-  // for (size_t i = 0; i < _actuators_ids.size(); ++i)
-  //   if(_actuators_ids[i]>=20)
-  //     pos[i]= 2048-512-256;
-  //   else if (_actuators_ids[i] >= 10) // mx28
-  //     pos[i] = 1024;
-  //   else
-  //     pos[i] = 2048;
-  //
-  // applyCorrection(pos);
-  // _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
-  // _controller.recv(READ_DURATION, _status);
-  //
-  // pos.clear();
-  // pos.resize(_actuators_ids.size());
-  // usleep(0.5e6);
-  // for (size_t i = 0; i < _actuators_ids.size(); ++i)
-  //   if(_actuators_ids[i]>=20)
-  //     pos[i]= 2048-256;
-  //   else if (_actuators_ids[i] >= 10) // mx28
-  //     pos[i] = 2048;
-  //   else
-  //     pos[i] = 2048;
-  //
-  // applyCorrection(pos);
-  // _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
-  // _controller.recv(READ_DURATION, _status);
-//
-//
-//
-//
-  // pos.clear();
-  // pos.resize(_actuators_ids.size());
-  // usleep(0.5e6);
+  pos.clear();
+  pos.resize(_actuators_ids.size());
+  usleep(0.5e6);
   for (size_t i = 0; i < _actuators_ids.size(); ++i)
   {
 	  pos[i] = 2048;
@@ -390,6 +345,74 @@ void RobotHexa::reset()
 
   ROS_INFO_STREAM("... done");
 
+}*/
+
+/** Make the hexapod properly stand up when it is laying on the ground.
+    It does so by first raising its legs, folding them and then bringing them down.
+**/
+void RobotHexa::reset()
+{
+  try
+  {
+    if(_controller.isOpen()==false)
+  	{
+  	  ROS_INFO_STREAM("re-opening dynamixel's serial");
+  	  // _controller.open_serial("/dev/ttyUSB0",B1000000);
+  	  _controller.open_serial(_serial_port, _serial_baudrate);
+  	}
+    _controller.flush();
+  }
+  catch (dynamixel::Error e)
+  {
+    ROS_ERROR_STREAM("(dynamixel): " << e.msg());
+  }
+
+  enable();
+
+  std::vector<int> pos(_actuators_ids.size());
+
+  // Raise the robot "softly"
+
+  for (size_t i = 0; i < _actuators_ids.size(); ++i)
+    if(_actuators_ids[i]>=20) // last actuator of each leg
+      pos[i]= 2048+256;
+    else if (_actuators_ids[i] >= 10) // second actuator of each leg
+      pos[i] = 3072;
+    else // first actuator of each leg
+      pos[i] = 2048;
+
+  applyCorrection(pos);
+  _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
+  _controller.recv(READ_DURATION, _status);
+
+  pos.clear();
+  pos.resize(_actuators_ids.size());
+  usleep(0.5e6);
+  for (size_t i = 0; i < _actuators_ids.size(); ++i)
+    if(_actuators_ids[i]>=20)
+      pos[i]= 2048+256;
+    else if (_actuators_ids[i] >= 10)
+      pos[i] = 2048;
+    else
+      pos[i] = 2048;
+
+  applyCorrection(pos);
+  _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
+  _controller.recv(READ_DURATION, _status);
+
+  pos.clear();
+  pos.resize(_actuators_ids.size());
+  usleep(0.5e6);
+  for (size_t i = 0; i < _actuators_ids.size(); ++i)
+  {
+	  pos[i] = 2048;
+  }
+
+  applyCorrection(pos);
+  _controller.send(dynamixel::ax12::SetPositions(_actuators_ids, pos));
+  _controller.recv(READ_DURATION, _status);
+
+  sleep(1);
 }
 
 
