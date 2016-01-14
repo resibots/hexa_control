@@ -8,4 +8,4 @@ SerialBaudrate: 1
 Odom: /odometry/filtered
 
 # MoCap
-MoCapOdomTransformEnable: false
+MoCapOdomTransformEnable: true

@@ -109,7 +109,7 @@ void RobotHexa::init()
 
   n_p.param("Odom", _odom_topic_name, std::string("/odom"));
   n_p.param("OdomEnable", _odom_enable, true);
-  n_p.param("MoCapOdomTransformEnable", _mocap_odom_enable, true);
+  n_p.param("MoCapOdomTransformEnable", _mocap_odom_enable, false);
 
   if (!_odom_enable) {
     // set the covered distance to -1 if we've disabled the visual odometry
