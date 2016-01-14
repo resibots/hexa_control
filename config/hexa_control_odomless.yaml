@@ -6,3 +6,6 @@ SerialBaudrate: 1
 
 # Odometry Topic
 OdomEnable: false
+
+# MoCap
+MoCapOdomTransformEnable: false

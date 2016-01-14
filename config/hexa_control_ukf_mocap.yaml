@@ -5,7 +5,7 @@ SerialPort: /dev/ttyACM0
 SerialBaudrate: 1
 
 # Odometry Topic
-Odom: /odom
+Odom: /odometry/filtered
 
 # MoCap
-MoCapOdomTransformEnable: false
+MoCapOdomTransformEnable: true
