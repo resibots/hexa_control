@@ -8,4 +8,4 @@ SerialBaudrate: 1
 Odom: /odom
 
 # MoCap
-MoCapOdomTransformEnable: false
+MoCapOdomTransformEnable: true

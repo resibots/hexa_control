@@ -187,7 +187,7 @@ protected:
   // Store the values of parameters for this ROS node
   std::string _serial_port, _odom_topic_name;
   int _serial_baudrate, _baudrate_choice;
-  bool _odom_enable;
+  bool _odom_enable, _mocap_odom_enable;
 };
 
 #endif

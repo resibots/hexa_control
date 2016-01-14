@@ -109,10 +109,14 @@ void RobotHexa::init()
 
   n_p.param("Odom", _odom_topic_name, std::string("/odom"));
   n_p.param("OdomEnable", _odom_enable, true);
+  n_p.param("MoCapOdomTransformEnable", _mocap_odom_enable, true);
 
-  // set the covered distance to -1 if we disabled the visual odometry
-  if (!_odom_enable)
+  if (!_odom_enable) {
+    // set the covered distance to -1 if we've disabled the visual odometry
     _covered_distance = -1;
+    // we do not need MoCap odom transform if we've disabled the visual odometry
+    _mocap_odom_enable = false;
+  }
 
   try
   {
@@ -832,12 +836,14 @@ void RobotHexa::transfer(ControllerDuty& controller, float duration,int transfer
     // publish message to reset UKF filter
     _reset_filter_pub.publish(pose_with_cov_st);
     ROS_INFO_STREAM("Message to reset UKF filter sent");
-    ros::ServiceClient odom_client = _node_p->serviceClient<std_srvs::Empty>("/odom_transform_restart");
-    std_srvs::Empty empty_srv;
-    if (odom_client.call(empty_srv)) {
-      ROS_INFO_STREAM("odom_transform_restart sent");
-    } else {
-      ROS_INFO_STREAM("Failed to call odom_transform_restart");
+    if (_mocap_odom_enable) {
+      ros::ServiceClient odom_client = _node_p->serviceClient<std_srvs::Empty>("/odom_transform_restart");
+      std_srvs::Empty empty_srv;
+      if (odom_client.call(empty_srv)) {
+        ROS_INFO_STREAM("odom_transform_restart sent");
+      } else {
+        ROS_INFO_STREAM("Failed to call odom_transform_restart");
+      }
     }
     _sub=_node_p->subscribe(_odom_topic_name,1,&RobotHexa::posCallback,this);
     ROS_INFO_STREAM("------------------------------------- First getSlamInfo() -----------------");
