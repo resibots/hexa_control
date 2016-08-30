@@ -2,7 +2,10 @@
 
 This package is to be used in conjuction with an optimisation technique that will provide the parameters used to generate the motion of each limb of an hexapod. More precisely, we use this with the Intelligent Trial and Error algorithm.
 
-Please note that this is a work in progress and it might not work as well as expected.
+**We no longer use nor develop this software** since we moved to a new backend for the interaction with the hexapods. Please refer to [dynamixel_control_hw] and [hexapod_ros]/hexapod_driver for newer software used for our hexapods.
+
+[dynamixel_control_hw]: https://github.com/resibots/dynamixel_control_hw
+[hexapod_ros]: https://github.com/resibots/hexapod_ros
 
 ## Authors
 Original author : Antoine Cully
